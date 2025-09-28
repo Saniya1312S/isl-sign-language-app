@@ -1,0 +1,11 @@
+streamlit
+opencv-python
+mediapipe
+numpy
+joblib
+pyttsx3
+google-genai
+Pillow
+requests
+pandas
+scikit-learn
