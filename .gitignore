@@ -1,0 +1,10 @@
+# Ignore all datasets and temp files
+Data/
+*.csv
+*.zip
+*.parquet
+*.npz
+*.ipynb_checkpoints/
+__pycache__/
+.DS_Store
+*.pyc
