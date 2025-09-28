@@ -9,5 +9,6 @@ Pillow
 requests
 pandas
 scikit-learn
+google-generativeai
 
 
