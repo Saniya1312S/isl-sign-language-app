@@ -1,0 +1,89 @@
+{
+ "note": "Original model = your RandomForest trained on 6,500 landmark rows; which images it was trained on is not recorded, so its Indian-dataset numbers are optimistic and it may also have seen some external images (its external score is therefore not guaranteed to be 'unseen'). New model = the evaluation copy that never saw the external data. 'mirrored_frame' reproduces what the original Streamlit live loop feeds its model (flipped frame, Left->first slot). The robust, unambiguous finding is the collapse of the original features when the left/right convention changes.",
+ "rows": [
+  {
+   "model": "Original (raw + Left/Right slots)",
+   "dataset": "Indian dataset (partly seen in training)",
+   "scenario": "as_trained",
+   "accuracy": 0.9982,
+   "n": 31130
+  },
+  {
+   "model": "New (normalised + mirror-aug)",
+   "dataset": "Indian dataset (partly seen in training)",
+   "scenario": "as_trained",
+   "accuracy": 0.9933,
+   "n": 31130
+  },
+  {
+   "model": "Original (raw + Left/Right slots)",
+   "dataset": "Indian dataset (partly seen in training)",
+   "scenario": "slots_swapped",
+   "accuracy": 0.1159,
+   "n": 31130
+  },
+  {
+   "model": "New (normalised + mirror-aug)",
+   "dataset": "Indian dataset (partly seen in training)",
+   "scenario": "slots_swapped",
+   "accuracy": 0.9933,
+   "n": 31130
+  },
+  {
+   "model": "Original (raw + Left/Right slots)",
+   "dataset": "Indian dataset (partly seen in training)",
+   "scenario": "mirrored_frame",
+   "accuracy": 0.1518,
+   "n": 31130
+  },
+  {
+   "model": "New (normalised + mirror-aug)",
+   "dataset": "Indian dataset (partly seen in training)",
+   "scenario": "mirrored_frame",
+   "accuracy": 0.9943,
+   "n": 31130
+  },
+  {
+   "model": "Original (raw + Left/Right slots)",
+   "dataset": "External dataset (unseen)",
+   "scenario": "as_trained",
+   "accuracy": 0.4526,
+   "n": 506
+  },
+  {
+   "model": "New (normalised + mirror-aug)",
+   "dataset": "External dataset (unseen)",
+   "scenario": "as_trained",
+   "accuracy": 0.3221,
+   "n": 506
+  },
+  {
+   "model": "Original (raw + Left/Right slots)",
+   "dataset": "External dataset (unseen)",
+   "scenario": "slots_swapped",
+   "accuracy": 0.1324,
+   "n": 506
+  },
+  {
+   "model": "New (normalised + mirror-aug)",
+   "dataset": "External dataset (unseen)",
+   "scenario": "slots_swapped",
+   "accuracy": 0.3221,
+   "n": 506
+  },
+  {
+   "model": "Original (raw + Left/Right slots)",
+   "dataset": "External dataset (unseen)",
+   "scenario": "mirrored_frame",
+   "accuracy": 0.1542,
+   "n": 506
+  },
+  {
+   "model": "New (normalised + mirror-aug)",
+   "dataset": "External dataset (unseen)",
+   "scenario": "mirrored_frame",
+   "accuracy": 0.332,
+   "n": 506
+  }
+ ]
+}

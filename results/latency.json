@@ -1,0 +1,14 @@
+{
+ "machine": "x86_64 \u00b7 Linux \u00b7 Python 3.12.3",
+ "frames_measured": 150,
+ "image_size": "640x480",
+ "stages_ms_p50": {
+  "hand detection (MediaPipe)": 26.23,
+  "feature building": 0.517,
+  "classifier": 0.623
+ },
+ "classifier_ms_p50": 0.623,
+ "total_ms_p50": 27.71,
+ "total_ms_p95": 47.72,
+ "note": "Measured on the machine named above with a single process; your laptop will differ. Network time for the browser camera stream and for translation / speech is NOT included."
+}

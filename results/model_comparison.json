@@ -1,0 +1,134 @@
+{
+ "features": "norm_eng + mirror augmentation",
+ "cap_per_class": 600,
+ "selected_by": "3-fold GroupKFold macro-F1 on training blocks; models within 0.005 of the best are tied and the smallest file wins",
+ "selected_model": "Logistic Regression",
+ "rows": [
+  {
+   "model": "Logistic Regression",
+   "cv_macro_f1": 0.9927,
+   "cv_std": 0.0028,
+   "train_accuracy": 0.9998,
+   "block_test": {
+    "accuracy": 0.9671,
+    "macro_f1": 0.9721
+   },
+   "external": {
+    "accuracy": 0.3221,
+    "macro_f1": 0.3114,
+    "n_images_with_hand": 506,
+    "end_to_end_accuracy": 0.2322,
+    "n_images_total": 702
+   },
+   "fit_seconds": 6.1,
+   "predict_ms_per_sample": 0.002,
+   "model_size_mb": 0.02,
+   "generalisation_gap": 0.0327
+  },
+  {
+   "model": "k-Nearest Neighbours",
+   "cv_macro_f1": 0.988,
+   "cv_std": 0.0073,
+   "train_accuracy": 1.0,
+   "block_test": {
+    "accuracy": 0.9678,
+    "macro_f1": 0.9742
+   },
+   "external": {
+    "accuracy": 0.3221,
+    "macro_f1": 0.3021,
+    "n_images_with_hand": 506,
+    "end_to_end_accuracy": 0.2322,
+    "n_images_total": 702
+   },
+   "fit_seconds": 4.3,
+   "predict_ms_per_sample": 0.229,
+   "model_size_mb": 12.08,
+   "generalisation_gap": 0.0322
+  },
+  {
+   "model": "Random Forest",
+   "cv_macro_f1": 0.9901,
+   "cv_std": 0.0061,
+   "train_accuracy": 1.0,
+   "block_test": {
+    "accuracy": 0.9701,
+    "macro_f1": 0.9748
+   },
+   "external": {
+    "accuracy": 0.3577,
+    "macro_f1": 0.3495,
+    "n_images_with_hand": 506,
+    "end_to_end_accuracy": 0.2578,
+    "n_images_total": 702
+   },
+   "fit_seconds": 72.3,
+   "predict_ms_per_sample": 0.028,
+   "model_size_mb": 1.93,
+   "generalisation_gap": 0.0299
+  },
+  {
+   "model": "Extra Trees",
+   "cv_macro_f1": 0.9894,
+   "cv_std": 0.0075,
+   "train_accuracy": 1.0,
+   "block_test": {
+    "accuracy": 0.969,
+    "macro_f1": 0.9743
+   },
+   "external": {
+    "accuracy": 0.3557,
+    "macro_f1": 0.3434,
+    "n_images_with_hand": 506,
+    "end_to_end_accuracy": 0.2564,
+    "n_images_total": 702
+   },
+   "fit_seconds": 12.2,
+   "predict_ms_per_sample": 0.038,
+   "model_size_mb": 4.48,
+   "generalisation_gap": 0.031
+  },
+  {
+   "model": "Gradient Boosting (Hist)",
+   "cv_macro_f1": 0.9814,
+   "cv_std": 0.0065,
+   "train_accuracy": 1.0,
+   "block_test": {
+    "accuracy": 0.9712,
+    "macro_f1": 0.9753
+   },
+   "external": {
+    "accuracy": 0.2964,
+    "macro_f1": 0.2815,
+    "n_images_with_hand": 506,
+    "end_to_end_accuracy": 0.2137,
+    "n_images_total": 702
+   },
+   "fit_seconds": 131.9,
+   "predict_ms_per_sample": 0.093,
+   "model_size_mb": 2.12,
+   "generalisation_gap": 0.0288
+  },
+  {
+   "model": "Neural Network (MLP)",
+   "cv_macro_f1": 0.9918,
+   "cv_std": 0.005,
+   "train_accuracy": 0.9999,
+   "block_test": {
+    "accuracy": 0.9671,
+    "macro_f1": 0.972
+   },
+   "external": {
+    "accuracy": 0.3221,
+    "macro_f1": 0.3019,
+    "n_images_with_hand": 506,
+    "end_to_end_accuracy": 0.2322,
+    "n_images_total": 702
+   },
+   "fit_seconds": 27.4,
+   "predict_ms_per_sample": 0.008,
+   "model_size_mb": 0.9,
+   "generalisation_gap": 0.0328
+  }
+ ]
+}

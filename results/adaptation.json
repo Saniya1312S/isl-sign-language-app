@@ -1,0 +1,72 @@
+{
+ "protocol": "calibration = first k files per letter of the external set; test = last 50% of that letter's files",
+ "model": "Logistic Regression",
+ "sample_weight": 15.0,
+ "n_test_images": 260,
+ "n_pool_images": 246,
+ "weight_sensitivity": [
+  {
+   "weight": 1,
+   "external_accuracy": 0.5962,
+   "studio_block_accuracy": 0.969
+  },
+  {
+   "weight": 5,
+   "external_accuracy": 0.5962,
+   "studio_block_accuracy": 0.9629
+  },
+  {
+   "weight": 10,
+   "external_accuracy": 0.6,
+   "studio_block_accuracy": 0.9614
+  },
+  {
+   "weight": 20,
+   "external_accuracy": 0.6077,
+   "studio_block_accuracy": 0.9607
+  },
+  {
+   "weight": 40,
+   "external_accuracy": 0.6,
+   "studio_block_accuracy": 0.958
+  }
+ ],
+ "rows": [
+  {
+   "calibration_images_per_letter": 0,
+   "external_accuracy": 0.3231,
+   "external_accuracy_std": 0.0,
+   "studio_block_accuracy": 0.9671
+  },
+  {
+   "calibration_images_per_letter": 1,
+   "external_accuracy": 0.4192,
+   "external_accuracy_std": 0.0,
+   "studio_block_accuracy": 0.9656
+  },
+  {
+   "calibration_images_per_letter": 2,
+   "external_accuracy": 0.4846,
+   "external_accuracy_std": 0.0,
+   "studio_block_accuracy": 0.9886
+  },
+  {
+   "calibration_images_per_letter": 3,
+   "external_accuracy": 0.4962,
+   "external_accuracy_std": 0.0,
+   "studio_block_accuracy": 0.9894
+  },
+  {
+   "calibration_images_per_letter": 5,
+   "external_accuracy": 0.5077,
+   "external_accuracy_std": 0.0,
+   "studio_block_accuracy": 0.9724
+  },
+  {
+   "calibration_images_per_letter": 8,
+   "external_accuracy": 0.5615,
+   "external_accuracy_std": 0.0,
+   "studio_block_accuracy": 0.9622
+  }
+ ]
+}

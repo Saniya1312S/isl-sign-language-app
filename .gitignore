@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+.DS_Store
+
+# secrets - NEVER commit these
+.streamlit/secrets.toml
+.env
+*.env
+
+# big / regenerated files
+data/interim/
+Data/
+*.zip

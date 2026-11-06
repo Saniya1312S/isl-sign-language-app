@@ -1,0 +1,55 @@
+{
+  "name": "alphabet",
+  "model_type": "Logistic Regression",
+  "feature_mode": "norm_eng",
+  "mirror_augmentation": true,
+  "n_training_images": 31130,
+  "n_training_rows_after_augmentation": 72380,
+  "images_per_class_cap": "none",
+  "training_source": "Indian (A-Z) frames where MediaPipe found a hand + ISL_Dataset_2 images (repeated x10, mirror-augmented)",
+  "n_external_images_in_training": 506,
+  "evaluation": {
+    "block_split_accuracy": {
+      "accuracy": 0.9671,
+      "macro_f1": 0.9721
+    },
+    "external_accuracy": {
+      "accuracy": 0.3221,
+      "macro_f1": 0.3114,
+      "n_images_with_hand": 506,
+      "end_to_end_accuracy": 0.2322,
+      "n_images_total": 702
+    }
+  },
+  "note": "Evaluation numbers come from a copy trained on block-train only and never shown the external data. The saved production model is retrained on all Indian frames PLUS the external images, so the external accuracy of the production model cannot be measured (it has seen those images) - the evaluation numbers are the honest ones.",
+  "classes": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "O",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+    "Z"
+  ],
+  "sklearn_version": "1.9.1",
+  "saved_at": "2026-11-04T19:46:26+00:00"
+}

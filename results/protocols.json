@@ -1,0 +1,26 @@
+{
+ "model": "Random Forest (120 trees)",
+ "features": "norm_eng",
+ "cap_per_class": 600,
+ "block_size_frames": 200,
+ "n_images_used": 15600,
+ "P1_random_split": {
+  "accuracy": 1.0,
+  "macro_f1": 1.0,
+  "n_train": 12480,
+  "n_test": 3120
+ },
+ "P2_block_split": {
+  "accuracy": 0.9743,
+  "macro_f1": 0.9791,
+  "n_train": 12957,
+  "n_test": 2643
+ },
+ "P3_external": {
+  "accuracy": 0.2945,
+  "macro_f1": 0.2951,
+  "n_images_with_hand": 506,
+  "end_to_end_accuracy": 0.2123,
+  "n_images_total": 702
+ }
+}

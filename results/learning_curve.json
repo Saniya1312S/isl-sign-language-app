@@ -1,0 +1,46 @@
+{
+ "rows": [
+  {
+   "images_per_class": 10,
+   "n_train": 260,
+   "block_test_accuracy": 0.9786,
+   "external_accuracy": 0.3202
+  },
+  {
+   "images_per_class": 25,
+   "n_train": 650,
+   "block_test_accuracy": 0.9598,
+   "external_accuracy": 0.3261
+  },
+  {
+   "images_per_class": 50,
+   "n_train": 1300,
+   "block_test_accuracy": 0.9795,
+   "external_accuracy": 0.3399
+  },
+  {
+   "images_per_class": 100,
+   "n_train": 2600,
+   "block_test_accuracy": 0.9657,
+   "external_accuracy": 0.3518
+  },
+  {
+   "images_per_class": 200,
+   "n_train": 5200,
+   "block_test_accuracy": 0.9708,
+   "external_accuracy": 0.3577
+  },
+  {
+   "images_per_class": 400,
+   "n_train": 10400,
+   "block_test_accuracy": 0.9695,
+   "external_accuracy": 0.3478
+  },
+  {
+   "images_per_class": 800,
+   "n_train": 20601,
+   "block_test_accuracy": 0.9676,
+   "external_accuracy": 0.3735
+  }
+ ]
+}

@@ -1,0 +1,26 @@
+# ---- Computer vision (pinned: 0.10.21 is the last MediaPipe that bundles the hand
+#      models offline and still provides mp.solutions.hands. Needs Python 3.9 - 3.12) ----
+mediapipe==0.10.21
+numpy>=1.26,<2
+protobuf>=4.25.3,<5
+
+# ---- Data science ----
+pandas>=2.2
+scikit-learn>=1.5
+joblib>=1.3
+plotly>=5.20
+matplotlib>=3.8
+pillow>=10.0
+
+# ---- App ----
+streamlit>=1.50
+streamlit-webrtc>=0.60
+av>=12.0
+
+# ---- Voice, translation, assistant ----
+gTTS>=2.5
+deep-translator>=1.11
+google-genai>=1.0
+
+# ---- Tests ----
+pytest>=8.0
