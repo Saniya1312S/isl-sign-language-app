@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+.DS_Store
+.keras/
+.matplotlib/
+
+# secrets - NEVER commit these
+.streamlit/secrets.toml
+.env
+*.env
+
+# big / raw image datasets (landmarks are saved in data/)
+data/interim/
+Data/alphabet/
+archive*/
+*.zip

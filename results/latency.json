@@ -1,0 +1,14 @@
+{
+  "machine": "Windows x86_64 \u00b7 Python 3.12",
+  "frames_measured": 100,
+  "image_size": "640x480",
+  "stages_ms_p50": {
+    "hand detection (MediaPipe)": 30.61,
+    "feature building (226-dim)": 1.994,
+    "classifier (ML / DL)": 20.994
+  },
+  "classifier_ms_p50": 20.994,
+  "total_ms_p50": 53.6,
+  "total_ms_p95": 72.36,
+  "note": "Measured locally with MediaPipe Hands and 226-dim robust geometric feature pipeline."
+}
