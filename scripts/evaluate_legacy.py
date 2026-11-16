@@ -60,11 +60,11 @@ def main():
         known = np.isin(a["y"], enc.classes_)
         c, nh, lab, y = a["coords"][known], a["n_hands"][known], a["labels"][known], a["y"][known]
         yi = enc.transform(y)
-        mc = mirror(c, nh)                                   # horizontally flipped hands
+        mc, ml = mirror(c, nh, lab)                           # horizontally flipped hands & labels
         scen = {
             "as_trained": (c, lab),
             "slots_swapped": (c, swap_labels(lab)),
-            "mirrored_frame": (mc, swap_labels(lab)),
+            "mirrored_frame": (mc, ml),
         }
         for sc, (cc, ll) in scen.items():
             X = build_features(cc, nh, "legacy_raw126", ll)

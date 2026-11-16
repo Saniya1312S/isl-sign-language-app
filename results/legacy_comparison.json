@@ -12,7 +12,7 @@
    "model": "New (normalised + mirror-aug)",
    "dataset": "Indian dataset (partly seen in training)",
    "scenario": "as_trained",
-   "accuracy": 0.9933,
+   "accuracy": 0.9934,
    "n": 31130
   },
   {
@@ -26,21 +26,21 @@
    "model": "New (normalised + mirror-aug)",
    "dataset": "Indian dataset (partly seen in training)",
    "scenario": "slots_swapped",
-   "accuracy": 0.9933,
+   "accuracy": 0.9934,
    "n": 31130
   },
   {
    "model": "Original (raw + Left/Right slots)",
    "dataset": "Indian dataset (partly seen in training)",
    "scenario": "mirrored_frame",
-   "accuracy": 0.1518,
+   "accuracy": 0.205,
    "n": 31130
   },
   {
    "model": "New (normalised + mirror-aug)",
    "dataset": "Indian dataset (partly seen in training)",
    "scenario": "mirrored_frame",
-   "accuracy": 0.9943,
+   "accuracy": 0.9937,
    "n": 31130
   },
   {
@@ -54,7 +54,7 @@
    "model": "New (normalised + mirror-aug)",
    "dataset": "External dataset (unseen)",
    "scenario": "as_trained",
-   "accuracy": 0.3221,
+   "accuracy": 0.3142,
    "n": 506
   },
   {
@@ -68,21 +68,21 @@
    "model": "New (normalised + mirror-aug)",
    "dataset": "External dataset (unseen)",
    "scenario": "slots_swapped",
-   "accuracy": 0.3221,
+   "accuracy": 0.3142,
    "n": 506
   },
   {
    "model": "Original (raw + Left/Right slots)",
    "dataset": "External dataset (unseen)",
    "scenario": "mirrored_frame",
-   "accuracy": 0.1542,
+   "accuracy": 0.1779,
    "n": 506
   },
   {
    "model": "New (normalised + mirror-aug)",
    "dataset": "External dataset (unseen)",
    "scenario": "mirrored_frame",
-   "accuracy": 0.332,
+   "accuracy": 0.3281,
    "n": 506
   }
  ]

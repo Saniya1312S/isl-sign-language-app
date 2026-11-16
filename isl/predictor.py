@@ -3,14 +3,14 @@ Frame -> letter. Combines the hand detector, feature builder and classifier (ML 
 """
 from __future__ import annotations
 
-import os
+import importlib.util
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
-from .config import DEFAULT_MIN_CONFIDENCE, MODELS_DIR
+from .config import DEFAULT_MIN_CONFIDENCE
 from .features import build_features, hands_to_arrays
 from .model_io import ModelBundle
 
@@ -25,15 +25,18 @@ class Prediction:
 
 
 class DLPredictor:
-    """Predictor using PyTorch Deep Learning ResNet-MLP model."""
+    """Predictor using optional PyTorch Deep Learning model."""
     def __init__(self, checkpoint_path: Union[str, Path], min_confidence: float = DEFAULT_MIN_CONFIDENCE):
+        if importlib.util.find_spec("torch") is None:
+            raise ImportError("PyTorch is not installed. Install with `pip install -r requirements-dl.txt` to use the DL model.")
         import torch
         from .dl_model import ISLLandmarkNet
 
         self.min_confidence = min_confidence
         self.device = torch.device("cpu")
-        chk = torch.load(str(checkpoint_path), map_location=self.device)
+        chk = torch.load(str(checkpoint_path), map_location=self.device, weights_only=True)
         self.classes = chk["classes"]
+        self.feature_mode = chk.get("feature_mode", "norm_eng")
         self.mean = np.array(chk["scaler_mean"], dtype=np.float32)
         self.scale = np.array(chk["scaler_scale"], dtype=np.float32)
 
@@ -70,7 +73,7 @@ class SignPredictor:
             self.dl_predictor = DLPredictor(bundle_or_path, min_confidence=min_confidence)
             self.is_dl = True
             self.classes = self.dl_predictor.classes
-            self.feature_mode = "robust_isl"
+            self.feature_mode = self.dl_predictor.feature_mode
         elif isinstance(bundle_or_path, ModelBundle):
             self.bundle = bundle_or_path
             self.classes = self.bundle.classes

@@ -55,13 +55,27 @@ def canonical_order(coords: np.ndarray, n_hands: np.ndarray) -> np.ndarray:
     return out
 
 
-def mirror(coords: np.ndarray, n_hands: np.ndarray) -> np.ndarray:
-    """Mirror the signer left<->right (x -> 1 - x) and restore canonical hand order."""
+def mirror(coords: np.ndarray, n_hands: np.ndarray, labels: np.ndarray | None = None) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
+    """Mirror the signer left<->right (x -> 1 - x), swap Left<->Right labels and restore canonical hand order."""
     flipped = coords.copy()
     for i in range(len(flipped)):
         n = int(n_hands[i])
         flipped[i, :n, :, 0] = 1.0 - flipped[i, :n, :, 0]
-    return canonical_order(flipped, n_hands)
+    out_coords = canonical_order(flipped, n_hands)
+    if labels is None:
+        return out_coords
+
+    out_labels = np.zeros_like(labels, dtype=object)
+    for i in range(len(labels)):
+        n = int(n_hands[i])
+        if n == 0:
+            continue
+        order = np.argsort(flipped[i, :n, WRIST, 0])
+        swapped = [("Right" if l == "Left" else ("Left" if l == "Right" else str(l))) for l in labels[i, :n]]
+        for j, idx in enumerate(order):
+            out_labels[i, j] = swapped[idx]
+    dtype_out = labels.dtype if labels.dtype.itemsize >= 20 else "<U10"
+    return out_coords, out_labels.astype(dtype_out)
 
 
 def _compute_angle_3d(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> np.ndarray:
