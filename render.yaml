@@ -1,0 +1,21 @@
+# ==============================================================================
+# Render Infrastructure Blueprint for ISL Sign Language Recognition
+# Docs: https://render.com/docs/blueprint-spec
+# ==============================================================================
+services:
+  - type: web
+    name: isl-sign-language-recognition
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.10
+      - key: HOST
+        value: 0.0.0.0
+      - key: GEMINI_API_KEY
+        sync: false  # User provides secret API key in Render dashboard

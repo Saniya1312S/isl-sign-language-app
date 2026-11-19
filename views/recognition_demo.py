@@ -26,6 +26,16 @@ from PIL import Image
 
 # Import core ISL prediction engine
 from src.predictor import SignPredictor, predict_sign
+from src.safe_dataframe import (
+    calculate_batch_metrics,
+    format_display_dataframe,
+    normalize_batch_dataframe,
+    safe_mean,
+    safe_percentage,
+    safe_to_bool_series,
+    safe_to_numeric_series,
+    validate_required_columns,
+)
 
 ROOT = Path(__file__).resolve().parent.parent
 SAMPLES_DIR = ROOT / "samples"
@@ -345,12 +355,17 @@ def main():
                 alpha_img_path = SAMPLES_DIR / f"Indian_{selected_alpha}.jpg"
 
             if alpha_img_path.exists():
-                sample_bgr = cv2.imread(str(alpha_img_path))
-                if sample_bgr is not None:
-                    with st.spinner(f"Evaluating ISL Letter '{selected_alpha}'..."):
-                        alpha_res = predictor.predict_image(sample_bgr)
-                    render_prediction_card(alpha_res, source_label=f"Indian Alphabet: {selected_alpha}.jpg", expected_label=selected_alpha)
-                    log_prediction(f"Alphabet: {selected_alpha}", alpha_res)
+                try:
+                    sample_bgr = cv2.imread(str(alpha_img_path))
+                    if sample_bgr is not None:
+                        with st.spinner(f"Evaluating ISL Letter '{selected_alpha}'..."):
+                            alpha_res = predictor.predict_image(sample_bgr)
+                        render_prediction_card(alpha_res, source_label=f"Indian Alphabet: {alpha_img_path.name}", expected_label=selected_alpha)
+                        log_prediction(f"Alphabet: {selected_alpha}", alpha_res)
+                    else:
+                        st.error(f"Failed to decode image file: {alpha_img_path.name}. Check image integrity.")
+                except Exception as ex:
+                    st.error(f"Error evaluating image for '{selected_alpha}': {ex}")
             else:
                 st.warning(f"Alphabet reference image for '{selected_alpha}' is currently unavailable.")
 
@@ -418,15 +433,21 @@ def main():
                         key="ext_sample_selector"
                     )
 
-                ext_target = selected_ext_name.split(".")[0].split("_")[-1].upper()
+                parts = Path(selected_ext_name).stem.split("_")
+                ext_target = parts[1].upper() if len(parts) > 1 else parts[0].upper()
                 ext_path = SAMPLES_DIR / selected_ext_name
-                ext_bgr = cv2.imread(str(ext_path))
 
-                if ext_bgr is not None:
-                    with st.spinner(f"Diagnosing {selected_ext_name}..."):
-                        ext_res = predictor.predict_image(ext_bgr)
-                    render_prediction_card(ext_res, source_label=f"External: {selected_ext_name}", expected_label=ext_target)
-                    log_prediction(f"External: {selected_ext_name}", ext_res)
+                try:
+                    ext_bgr = cv2.imread(str(ext_path))
+                    if ext_bgr is not None:
+                        with st.spinner(f"Diagnosing {selected_ext_name}..."):
+                            ext_res = predictor.predict_image(ext_bgr)
+                        render_prediction_card(ext_res, source_label=f"External: {selected_ext_name}", expected_label=ext_target)
+                        log_prediction(f"External: {selected_ext_name}", ext_res)
+                    else:
+                        st.error(f"Failed to read image file: {selected_ext_name}")
+                except Exception as ex:
+                    st.error(f"Error diagnosing external sample {selected_ext_name}: {ex}")
 
         # ---------------------------------------------------------------------
         # SUBTAB D: Batch Prediction Results & Audit
@@ -437,110 +458,210 @@ def main():
 
             col_b1, col_b2, col_b3 = st.columns(3)
             with col_b1:
-                btn_run_alpha = st.button("🧪 Test All 26 Indian Alphabet Samples", use_container_width=True)
+                btn_run_alpha = st.button("🧪 Test All 26 Indian Alphabet Samples", key="btn_run_alpha_live", use_container_width=True)
             with col_b2:
-                btn_run_ext = st.button("🧪 Test All 23 External Dataset Samples", use_container_width=True)
+                btn_run_ext = st.button("🧪 Test All 23 External Dataset Samples", key="btn_run_ext_live", use_container_width=True)
             with col_b3:
-                btn_run_all = st.button("🧪 Test Complete Benchmark (49 Samples)", use_container_width=True)
+                btn_run_all = st.button("🧪 Test Complete Benchmark (49 Samples)", key="btn_run_all_live", use_container_width=True)
 
-            # Check if user triggered real-time batch run
+            # Trigger real-time execution only when button clicked
+            trigger_run = None
             if btn_run_alpha:
-                st.session_state["active_batch"] = "alphabet"
+                trigger_run = "alphabet"
             elif btn_run_ext:
-                st.session_state["active_batch"] = "external"
+                trigger_run = "external"
             elif btn_run_all:
-                st.session_state["active_batch"] = "all"
+                trigger_run = "all"
 
-            active_batch = st.session_state.get("active_batch", None)
-
-            if active_batch is not None:
-                if active_batch == "alphabet":
+            if trigger_run is not None:
+                if trigger_run == "alphabet":
                     target_files = [(f, f.stem.upper(), "Indian") for f in sorted(list(ALPHABET_DIR.glob("*.jpg")))]
-                elif active_batch == "external":
-                    target_files = [(f, f.stem.split("_")[1].upper(), "External") for f in sorted(list(SAMPLES_DIR.glob("External_*.jpg")))]
+                    batch_title = "26 Indian Alphabet Samples"
+                elif trigger_run == "external":
+                    target_files = []
+                    for f in sorted(list(SAMPLES_DIR.glob("External_*.jpg"))):
+                        p = f.stem.split("_")
+                        lbl = p[1].upper() if len(p) > 1 else f.stem.upper()
+                        target_files.append((f, lbl, "External"))
+                    batch_title = "23 External Dataset Samples"
                 else:
-                    target_files = (
-                        [(f, f.stem.upper(), "Indian") for f in sorted(list(ALPHABET_DIR.glob("*.jpg")))] +
-                        [(f, f.stem.split("_")[1].upper(), "External") for f in sorted(list(SAMPLES_DIR.glob("External_*.jpg")))]
-                    )
+                    target_files = [(f, f.stem.upper(), "Indian") for f in sorted(list(ALPHABET_DIR.glob("*.jpg")))]
+                    for f in sorted(list(SAMPLES_DIR.glob("External_*.jpg"))):
+                        p = f.stem.split("_")
+                        lbl = p[1].upper() if len(p) > 1 else f.stem.upper()
+                        target_files.append((f, lbl, "External"))
+                    batch_title = "Complete Benchmark (49 Samples)"
 
-                progress_bar = st.progress(0.0, text="Running real-time inference across batch...")
-                batch_rows = []
-                for idx, (f_path, exp_lbl, src) in enumerate(target_files):
-                    im_b = cv2.imread(str(f_path))
-                    res = predictor.predict_image(im_b)
-                    pred_lbl = res["predicted_letter"]
-                    hand_det = res["hand_detected"]
-                    conf = res["confidence"]
-                    lat = res["processing_time_ms"]
-                    is_correct = (pred_lbl == exp_lbl) if hand_det else False
+                if not target_files:
+                    st.warning("No sample files found matching batch criteria.")
+                else:
+                    progress_bar = st.progress(0.0, text=f"Running real-time inference on {batch_title}...")
+                    batch_rows = []
+                    total_count = len(target_files)
 
-                    res_label = "PASS" if is_correct else ("FAIL (No Hand)" if not hand_det else "FAIL (Wrong Label)")
-                    batch_rows.append({
-                        "Image": f_path.name,
-                        "Source": src,
-                        "Expected": exp_lbl,
-                        "Predicted": pred_lbl or "None",
-                        "Confidence": f"{conf:.1%}",
-                        "Hand Detected": "✅ Yes" if hand_det else "❌ No",
-                        "Result": res_label,
-                        "Latency (ms)": f"{lat:.1f}"
-                    })
-                    progress_bar.progress((idx + 1) / len(target_files), text=f"Processed {idx+1}/{len(target_files)}: {f_path.name}")
+                    for idx, (f_path, exp_lbl, src) in enumerate(target_files):
+                        try:
+                            if not f_path.exists():
+                                batch_rows.append({
+                                    "Image": f_path.name,
+                                    "Source": src,
+                                    "Expected": exp_lbl,
+                                    "Predicted": "None",
+                                    "Confidence": 0.0,
+                                    "Hand Detected": False,
+                                    "Result": "FAIL",
+                                    "Latency (ms)": 0.0,
+                                    "Status": "missing_file",
+                                    "Notes": "Image file not found on disk"
+                                })
+                                continue
 
-                st.session_state["batch_results_df"] = pd.DataFrame(batch_rows)
-                progress_bar.empty()
+                            im_b = cv2.imread(str(f_path))
+                            if im_b is None:
+                                batch_rows.append({
+                                    "Image": f_path.name,
+                                    "Source": src,
+                                    "Expected": exp_lbl,
+                                    "Predicted": "None",
+                                    "Confidence": 0.0,
+                                    "Hand Detected": False,
+                                    "Result": "FAIL",
+                                    "Latency (ms)": 0.0,
+                                    "Status": "corrupt_image",
+                                    "Notes": "Failed to decode image bytes"
+                                })
+                                continue
+
+                            res = predictor.predict_image(im_b)
+                            pred_lbl = res.get("predicted_letter")
+                            hand_det = bool(res.get("hand_detected", False))
+                            conf = float(res.get("confidence", 0.0))
+                            lat = float(res.get("processing_time_ms", 0.0))
+                            status = res.get("status", "unknown")
+
+                            is_correct = (pred_lbl == exp_lbl) if hand_det else False
+                            res_label = "PASS" if is_correct else "FAIL"
+
+                            batch_rows.append({
+                                "Image": f_path.name,
+                                "Source": src,
+                                "Expected": exp_lbl,
+                                "Predicted": pred_lbl or "None",
+                                "Confidence": conf,
+                                "Hand Detected": hand_det,
+                                "Result": res_label,
+                                "Latency (ms)": lat,
+                                "Status": status,
+                                "Notes": res.get("message", "")
+                            })
+                        except Exception as ex:
+                            batch_rows.append({
+                                "Image": f_path.name,
+                                "Source": src,
+                                "Expected": exp_lbl,
+                                "Predicted": "None",
+                                "Confidence": 0.0,
+                                "Hand Detected": False,
+                                "Result": "FAIL",
+                                "Latency (ms)": 0.0,
+                                "Status": "error",
+                                "Notes": f"Prediction error: {str(ex)}"
+                            })
+
+                        progress_bar.progress((idx + 1) / total_count, text=f"Tested {idx+1}/{total_count}: {f_path.name}")
+
+                    fresh_df = pd.DataFrame(batch_rows)
+                    st.session_state["batch_results_df"] = normalize_batch_dataframe(fresh_df)
+                    st.session_state["batch_run_info"] = {
+                        "title": batch_title,
+                        "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "count": len(batch_rows)
+                    }
+                    progress_bar.empty()
 
             # Render Batch Results Table if available
             b_df = st.session_state.get("batch_results_df", None)
-            if b_df is None:
-                # Load pre-saved results from reports/
-                alpha_res_path = REPORTS_DIR / "indian_alphabet_sample_results.csv"
-                if alpha_res_path.exists():
-                    raw_df = pd.read_csv(alpha_res_path)
-                    b_df = raw_df.rename(columns={
-                        "image_filename": "Image", "expected_letter": "Expected", "predicted_letter": "Predicted",
-                        "confidence": "Confidence", "hand_detected": "Hand Detected", "correct": "Result",
-                        "processing_time_ms": "Latency (ms)"
-                    })
-                    b_df["Source"] = "Indian"
-                    b_df["Result"] = b_df["Result"].apply(lambda x: "PASS" if x else "FAIL")
-                    b_df["Confidence"] = b_df["Confidence"].apply(lambda x: f"{float(x):.1%}")
+            run_info = st.session_state.get("batch_run_info", None)
 
-            if b_df is not None:
+            if b_df is not None and not b_df.empty:
                 st.divider()
-                # Summary KPIs
+                run_title = run_info.get("title", "Batch Prediction") if run_info else "Active Batch Run"
+                run_time = run_info.get("timestamp", "") if run_info else datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                st.markdown(f"#### 📊 Active Test Run: **{run_title}** · Executed at `{run_time}`")
+
+                # Compute KPIs using safe helper
+                metrics = calculate_batch_metrics(b_df)
                 k1, k2, k3, k4 = st.columns(4)
                 with k1:
-                    st.metric("Total Tested", len(b_df))
+                    st.metric("Total Tested", metrics["total_tested"])
                 with k2:
-                    det_rate = (b_df["Hand Detected"].str.contains("Yes")).mean()
-                    st.metric("Detection Rate", f"{det_rate:.1%}")
+                    st.metric(
+                        "Hand Detection Rate",
+                        f"{metrics['detection_rate']:.1%}",
+                        delta=f"{metrics['total_detected']}/{metrics['total_tested']} detected" if metrics["total_tested"] > 0 else None
+                    )
                 with k3:
-                    pass_rate = (b_df["Result"] == "PASS").mean()
-                    st.metric("Accuracy", f"{pass_rate:.1%}")
+                    st.metric(
+                        "Overall Accuracy",
+                        f"{metrics['overall_accuracy']:.1%}",
+                        delta=f"{metrics['total_correct']}/{metrics['total_tested']} correct" if metrics["total_tested"] > 0 else None
+                    )
                 with k4:
-                    st.metric("Total Correct", f"{(b_df['Result'] == 'PASS').sum()} / {len(b_df)}")
+                    st.metric(
+                        "Accuracy on Detected",
+                        f"{metrics['accuracy_on_detected']:.1%}",
+                        delta=f"{metrics['total_correct']}/{metrics['total_detected']} correct" if metrics["total_detected"] > 0 else None
+                    )
 
                 # Filter Controls
-                filter_choice = st.radio("Filter Table View:", ["Show All", "✅ PASS Only", "❌ FAIL Only"], horizontal=True)
+                col_f1, col_f2 = st.columns([2, 1])
+                with col_f1:
+                    filter_choice = st.radio("Filter Table View:", ["Show All", "✅ PASS Only", "❌ FAIL Only"], horizontal=True, key="batch_filter_radio")
+
                 filtered_df = b_df
                 if filter_choice == "✅ PASS Only":
                     filtered_df = b_df[b_df["Result"] == "PASS"]
                 elif filter_choice == "❌ FAIL Only":
                     filtered_df = b_df[b_df["Result"] != "PASS"]
 
-                st.dataframe(filtered_df, use_container_width=True, height=350)
+                # Display formatted DataFrame
+                st.dataframe(format_display_dataframe(filtered_df), use_container_width=True, height=350)
 
-                # Download CSV
+                # Download Fresh CSV
                 csv_buf = io.StringIO()
                 b_df.to_csv(csv_buf, index=False)
                 st.download_button(
                     label="📥 Download Batch Results CSV",
                     data=csv_buf.getvalue(),
                     file_name=f"isl_batch_results_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                    mime="text/csv"
+                    mime="text/csv",
+                    key="btn_download_batch_csv"
                 )
+            else:
+                st.info("👆 **No batch run has been executed in this session yet.** Click one of the test buttons above to run real-time inference across sample images.")
+
+            # Optional Pre-saved Offline Benchmark Section (clearly separated!)
+            with st.expander("📁 View Previously Saved Offline Benchmark Reports"):
+                st.caption("These reports were generated by benchmark audit scripts on disk and are kept for offline audit reference.")
+                alpha_res_path = REPORTS_DIR / "indian_alphabet_sample_results.csv"
+                if alpha_res_path.exists():
+                    try:
+                        saved_raw = pd.read_csv(alpha_res_path)
+                        saved_df = normalize_batch_dataframe(saved_raw)
+                        st.markdown("##### 🇮🇳 Indian ISL Alphabet Benchmark Report (`reports/indian_alphabet_sample_results.csv`)")
+                        saved_metrics = calculate_batch_metrics(saved_df)
+                        sk1, sk2, sk3 = st.columns(3)
+                        with sk1:
+                            st.metric("Stored Samples", f"{saved_metrics['total_tested']} Letters")
+                        with sk2:
+                            st.metric("Detection Rate", f"{saved_metrics['detection_rate']:.1%}")
+                        with sk3:
+                            st.metric("Benchmark Accuracy", f"{saved_metrics['overall_accuracy']:.1%}")
+                        st.dataframe(format_display_dataframe(saved_df), use_container_width=True, height=220)
+                    except Exception as ex:
+                        st.warning(f"Could not parse offline benchmark report: {ex}")
+                else:
+                    st.caption("No offline benchmark reports found on disk.")
 
     # -------------------------------------------------------------------------
     # TAB 3: Live Webcam Recognition

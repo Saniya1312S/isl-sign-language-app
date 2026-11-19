@@ -9,8 +9,10 @@ venv/
 
 # secrets - NEVER commit these
 .streamlit/secrets.toml
+.streamlit/credentials.toml
 .env
 *.env
+*.log
 
 # big / raw image datasets (landmarks are saved in data/)
 data/interim/

@@ -18,6 +18,7 @@ from .preprocessing import MediaPipeHandDetector
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_MODEL_PATH = ROOT / "models" / "final_isl_model.joblib"
+ALT_MODEL_PATH = ROOT / "models" / "alphabet_model.pkl"
 DEFAULT_META_PATH = ROOT / "models" / "model_metadata.json"
 
 
@@ -27,11 +28,19 @@ class SignPredictor:
     def __init__(self, model_path: Path | str | None = None,
                  meta_path: Path | str | None = None,
                  min_confidence: float = 0.50):
-        self.model_path = Path(model_path) if model_path else DEFAULT_MODEL_PATH
+        if model_path:
+            self.model_path = Path(model_path)
+        elif DEFAULT_MODEL_PATH.exists():
+            self.model_path = DEFAULT_MODEL_PATH
+        elif ALT_MODEL_PATH.exists():
+            self.model_path = ALT_MODEL_PATH
+        else:
+            self.model_path = DEFAULT_MODEL_PATH
+
         self.meta_path = Path(meta_path) if meta_path else DEFAULT_META_PATH
 
         if not self.model_path.exists():
-            raise FileNotFoundError(f"Trained model not found at: {self.model_path}. Run python -m src.train_models first.")
+            raise FileNotFoundError(f"Trained model not found at: {self.model_path}. Run python scripts/train_model.py first.")
 
         self.model = joblib.load(self.model_path)
 

@@ -1,180 +1,284 @@
-# 🤟 Indian Sign Language (ISL) Fingerspelling to Speech
+# 🤟 Indian Sign Language Alphabet Recognition and Multilingual Communication
 
-Real-time Indian Sign Language (ISL) fingerspelling recognition (A–Z) pipeline using MediaPipe Hands, coordinate normalization, mirror-invariant feature engineering, and scikit-learn classification. Provides live text spelling, multilingual translation (English, Hindi, Marathi), and speech synthesis.
+[![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12-blue?logo=python)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
+[![MediaPipe](https://img.shields.io/badge/Vision-MediaPipe%20Hands-4285F4?logo=google)](https://developers.google.com/mediapipe)
+[![Scikit-Learn](https://img.shields.io/badge/ML-Support%20Vector%20Machine-F7931E?logo=scikit-learn)](https://scikit-learn.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
 
-[![tests](https://github.com/Saniya1312S/isl-sign-language-app/actions/workflows/ci.yml/badge.svg)](https://github.com/Saniya1312S/isl-sign-language-app/actions)
-![python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)
-![scikit-learn](https://img.shields.io/badge/scikit--learn-1.6.1-orange)
-![mediapipe](https://img.shields.io/badge/vision-MediaPipe%200.10.21-green)
-![streamlit](https://img.shields.io/badge/app-Streamlit-red)
-![license](https://img.shields.io/badge/license-MIT-purple)
-
----
-
-## 📊 Honest Evaluation & Protocol Findings
-
-A critical finding in video-based sign language datasets is that **random train/test splits severely leak data**: consecutive video frames from the same signer recording are near-identical, artificially inflating test scores.
-
-| Protocol | Evaluation Setup | Accuracy | Macro-F1 | Note |
-| :--- | :--- | :---: | :---: | :--- |
-| **P1: Random Split** | Standard 80/20 train_test_split on video frames | **100.00%** | 100.00% | **Invalid**: Near-duplicate frame leakage |
-| **P2: Block Split** | Held-out 200-frame consecutive blocks (stratified per letter) | **97.12%** | 97.49% | **Genuine**: Tests generalization to unseen clips |
-| **P3: External Dataset** | Tested on `ISL_Dataset_2` (23 classes, different signers & backgrounds) | **26.09%** | 26.37% | **Domain Shift**: Realistic test across people/lighting (18.8% end-to-end) |
-
-> 📌 **Key takeaway:** The same model architecture that achieves 100.0% on random splits achieves **97.1%** on held-out blocks and drops to **26.1%** when evaluated on external unseen signers. Reporting random split accuracy on video datasets is misleading.
+> **Project Summary:**  
+> This project recognizes static Indian Sign Language (ISL) alphabet gestures (A–Z) using computer vision and machine learning. It converts recognized letters into English sentences through continuous fingerspelling, supports instant offline Hindi and Marathi translation, provides speech output, and offers optional conversational assistance powered by Google Gemini.
 
 ---
 
-## ⚡ Inference Latency & Performance
+## 🌐 Live Demo
 
-Measurements taken on real hand images (640x480 resolution) using MediaPipe Hands tracking mode:
-- **Hand Detection (MediaPipe):** 50.0 ms median
-- **Feature Engineering (`norm_eng`):** 0.59 ms median
-- **Classifier Inference (Logistic Regression):** 0.60 ms median
-- **Total Frame Processing Time (p50):** **53.8 ms** (~19 FPS)
-- **Total Frame Processing Time (p95):** **92.4 ms**
-- **Benchmark Hardware:** `Intel64 Family 6 Model 154 Stepping 3, GenuineIntel · Windows · Python 3.12.10`
+- **Live Demo:** `Deployment pending`
+- **Local Application URL:** `http://localhost:8000` (FastAPI backend + Vanilla JS frontend)
+- **Deployment Platform:** Render Blueprint (`render.yaml` and `Dockerfile` included)
+- **Browser Camera Security Note:** Modern browsers require **HTTPS** (or `localhost`) to access the user webcam via the `MediaDevices.getUserMedia()` API. Non-HTTPS deployments cannot activate webcam video streaming.
 
 ---
 
-## 🏁 Model Benchmark Comparison
+## ✨ Key Features
 
-All models were evaluated under identical conditions: `norm_eng` features with mirror augmentation, evaluated on held-out blocks and external unseen signers.
+1. **Static Alphabet Recognition (A–Z):**
+   - Accurately classifies static hand gestures for all 26 English letters in Indian Sign Language.
+   - Natively supports both **one-handed signs** (A, B, C, etc.) and **two-handed signs** (D, E, F, K, M, P, R, T, V, W, etc.) using a 171-dimensional invariant feature vector.
 
-| Model | Features | CV Macro-F1 | Block Test Acc | External Acc | Latency (ms) | Size (KB) |
-| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-| Logistic Regression | norm_eng (171) | 98.4% | 96.8% | 31.4% | 0.22 ms | 41.0 KB |
-| k-Nearest Neighbours | norm_eng (171) | 98.5% | 96.9% | 32.2% | 4.20 ms | 12359.7 KB |
-| Random Forest | norm_eng (171) | 98.4% | 97.3% | 33.8% | 27.23 ms | 1577.0 KB |
-| Extra Trees | norm_eng (171) | 98.5% | 97.0% | 36.2% | 37.88 ms | 3420.2 KB |
-| Gradient Boosting (Hist) | norm_eng (171) | 96.6% | 97.0% | 24.7% | 11.39 ms | 1966.1 KB |
-| Neural Network (MLP) | norm_eng (171) | 98.1% | 96.9% | 31.2% | 1.04 ms | 1228.8 KB |
-| PyTorch ResNet-MLP | norm_eng (171) | 98.3% | 96.9% | 31.2% | 1.70 ms | 1443.8 KB |
+2. **Webcam & Image Upload Modes:**
+   - Real-time webcam streaming with canvas frame sampling.
+   - Drag-and-drop or file browser upload for local images (JPG, PNG, WEBP).
+   - One-click interactive sample gallery covering all 26 authentic Indian ISL alphabet gestures.
 
-### Selected Shipped Model: `Logistic Regression`
-- **Selection Rule:** Highest efficiency among scikit-learn classifiers within 0.005 CV Macro-F1 of the best performing model.
-- **Advantages:** Smallest file footprint (~41 KB), fastest CPU single-sample latency (0.22 ms), zero external deep learning runtime dependencies.
+3. **5-Second Stable-Sign Capture:**
+   - Visual circular countdown ring (`5s → 4s → 3s → 2s → 1s`) on the Home page for accessible posing.
+   - Continuous temporal stability accumulator on Page 2: holds the letter requirement for 5.0 consecutive seconds before committing it to the sentence.
 
----
+4. **Continuous Fingerspelling Sentence Builder:**
+   - Appends recognized letters into full English words (`H` → `E` → `L` → `L` → `O` → `HELLO`).
+   - Duplicate letter suppression: prevents letter repetition until the user relaxes or changes hand sign.
+   - Full keyboard text editing, backspace, clear, and clipboard copy controls.
 
-## 📐 Feature Engineering Ablation
+5. **Multilingual Translation (Hindi & Marathi):**
+   - Instant offline dictionary mapping for common Indian conversational phrases.
+   - Rule-based phonetic Devanagari transliteration fallback for out-of-vocabulary words.
 
-| Feature Set | Mirror Augmentation | Dimensions | Block Test Acc | Mirrored Test Acc | External Acc |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| `robust_isl` | No | 226 | 97.0% | 72.4% | 27.9% |
-| `robust_isl` | Yes | 226 | 97.0% | 97.0% | 31.6% |
-| `norm_eng` | No | 171 | 97.1% | 57.3% | 26.1% |
-| `norm_eng` | Yes | 171 | 97.3% | 97.5% | 32.8% |
-| `norm` | No | 131 | 97.1% | 47.5% | 20.9% |
-| `norm` | Yes | 131 | 96.9% | 96.9% | 25.5% |
-| `sorted_raw` | No | 126 | 97.1% | 35.6% | 17.2% |
-| `sorted_raw` | Yes | 126 | 94.8% | 94.8% | 16.0% |
-| `legacy_raw126` | No | 126 | 97.1% | 10.2% | 15.6% |
-| `legacy_raw126` | Yes | 126 | 97.1% | 97.0% | 18.0% |
+6. **Text-to-Speech Pronunciation:**
+   - Client-side browser speech synthesis (Web Speech API) with native Indian accents (`en-IN`, `hi-IN`, `mr-IN`).
 
-**Findings:**
-1. Without mirror augmentation, accuracy on horizontally flipped / selfie camera frames collapses to 10%–57% (e.g. `norm_eng` drops to 57.3%).
-2. Adding mirror augmentation ensures symmetry invariance ($x \to 1-x$, Left $\leftrightarrow$ Right swap) yielding 97.3% block accuracy and 97.5% mirrored accuracy.
-3. The 171-dimensional `norm_eng` feature set matches or exceeds the 226-dimensional set while saving compute and storage.
+7. **Optional Gemini AI Assistant:**
+   - Conversational companion that ingests the recognized sentence with one click.
+   - Generates contextual responses in English, Hindi, or Marathi.
+   - Secure server-side environment key loading (`.env`) or session-memory configuration.
+
+8. **Educational "About Project" Page:**
+   - Explains the complete architecture, verified dataset statistics, 5-step ML pipeline, and performance benchmarks in plain, accessible language.
+
+> ℹ️ **Important Note on Sign Recognition Scope:**  
+> This system recognizes **static alphabet handshapes (fingerspelling A–Z)**. Words and sentences are constructed through sequential fingerspelling. It does **not** independently recognize full dynamic continuous sign language gestures.
 
 ---
 
-## 🎯 Few-Shot Personalisation (Overcoming Domain Shift)
+## 🔄 How It Works
 
-To address the drop on unseen signers (26.1%), the app provides interactive few-shot calibration (*Teach the App Your Hands*). By capturing just a few calibration frames per letter from the target user, accuracy recovers significantly without forgetting studio data:
-
-| Calibration Images / Letter | External Accuracy | Studio Block Accuracy |
-| :---: | :---: | :---: |
-| 0 | 32.3% | 96.8% |
-| 1 | 41.5% | 96.8% |
-| 2 | 48.5% | 98.7% |
-| 3 | 49.2% | 99.2% |
-| 5 | 50.4% | 97.6% |
-| 8 | 56.9% | 96.4% |
+```text
+               ┌─────────────────────────────┐
+               │    ISL Hand Gesture (A–Z)   │
+               └──────────────┬──────────────┘
+                              │
+                              ▼
+               ┌─────────────────────────────┐
+               │    Webcam / Image Capture   │
+               └──────────────┬──────────────┘
+                              │
+                              ▼
+               ┌─────────────────────────────┐
+               │    MediaPipe Hand Tracker   │
+               │    (Detects Up to 2 Hands)  │
+               └──────────────┬──────────────┘
+                              │
+                              ▼
+               ┌─────────────────────────────┐
+               │  Feature Normalization      │
+               │  - Wrist-x Canonical Order  │
+               │  - Scale & Center Invariant │
+               │  - 171-Dimensional Vector   │
+               └──────────────┬──────────────┘
+                              │
+                              ▼
+               ┌─────────────────────────────┐
+               │ Support Vector Machine (SVM)│
+               │ (RBF Kernel, Calibrated P)  │
+               └──────────────┬──────────────┘
+                              │
+                              ▼
+               ┌─────────────────────────────┐
+               │   Predicted Alphabet (A–Z)  │
+               └──────────────┬──────────────┘
+                              │
+                              ▼
+               ┌─────────────────────────────┐
+               │ 5-Second Stability Engine   │
+               │ & Duplicate Letter Filter   │
+               └──────────────┬──────────────┘
+                              │
+                              ▼
+               ┌─────────────────────────────┐
+               │ Sentence Builder (English)  │
+               └──────────────┬──────────────┘
+                              │
+              ┌───────────────┴───────────────┐
+              ▼                               ▼
+┌───────────────────────────┐   ┌───────────────────────────┐
+│ Hindi & Marathi Translate │   │  Send to Gemini Assistant │
+└─────────────┬─────────────┘   └─────────────┬─────────────┘
+              ▼                               ▼
+┌───────────────────────────┐   ┌───────────────────────────┐
+│   Text-to-Speech Voice    │   │  Multilingual AI Response │
+└───────────────────────────┘   └───────────────────────────┘
+```
 
 ---
 
-## 🔄 Legacy vs. New Pipeline Comparison
+## 📊 Model and Dataset Overview
 
-Evaluation of the original baseline model (trained on raw landmark coordinates without coordinate normalization or mirror augmentation) versus the updated pipeline:
+All statistics below are read directly from reproducible evaluation scripts and project artifacts (`models/model_metadata.json`, `reports/dataset_analysis.md`, `reports/final_evaluation.md`).
 
-| Model | Dataset | Scenario | Accuracy | Sample Count |
-| :--- | :--- | :--- | :---: | :---: |
-| Original (raw + Left/Right slots) | Indian dataset (partly seen in training) | `as_trained` | 99.8% | 31,130 |
-| New (normalised + mirror-aug) | Indian dataset (partly seen in training) | `as_trained` | 99.3% | 31,130 |
-| Original (raw + Left/Right slots) | Indian dataset (partly seen in training) | `slots_swapped` | 11.6% | 31,130 |
-| New (normalised + mirror-aug) | Indian dataset (partly seen in training) | `slots_swapped` | 99.3% | 31,130 |
-| Original (raw + Left/Right slots) | Indian dataset (partly seen in training) | `mirrored_frame` | 20.5% | 31,130 |
-| New (normalised + mirror-aug) | Indian dataset (partly seen in training) | `mirrored_frame` | 99.4% | 31,130 |
-| Original (raw + Left/Right slots) | External dataset (unseen) | `as_trained` | 45.3% | 506 |
-| New (normalised + mirror-aug) | External dataset (unseen) | `as_trained` | 31.4% | 506 |
-| Original (raw + Left/Right slots) | External dataset (unseen) | `slots_swapped` | 13.2% | 506 |
-| New (normalised + mirror-aug) | External dataset (unseen) | `slots_swapped` | 31.4% | 506 |
-| Original (raw + Left/Right slots) | External dataset (unseen) | `mirrored_frame` | 17.8% | 506 |
-| New (normalised + mirror-aug) | External dataset (unseen) | `mirrored_frame` | 32.8% | 506 |
+### Dataset Statistics
+- **Total Landmark Records:** 32,647 frames across 137 raw attributes (`data/landmarks_alphabet.csv.gz`).
+- **Primary Indian Studio Dataset:** 31,945 frames across all 26 ISL classes (A–Z), studio-recorded with uniform lighting and balanced class distribution (~1,200 frames per letter).
+  - MediaPipe valid hand detection rate: **97.4%** (31,130 / 31,945).
+- **External Generalization Dataset (`ISL_Dataset_2`):** 702 frames across 23 classes (H, J, Y missing), recorded with different signers and unconstrained lighting.
+  - MediaPipe valid hand detection rate: **72.1%** (506 / 702).
+- **Partitioning Protocol:** Group-aware consecutive frame block splits (10,400 training frames, 5,200 validation frames, 5,200 test frames) to strictly prevent temporal data leakage from consecutive video frames.
 
-When slots are swapped or the camera is mirrored, the legacy model collapses to 11%–20%, whereas the new normalized representation remains stable.
+### Machine Learning Model
+- **Algorithm:** Support Vector Machine (SVM) with Radial Basis Function (RBF) kernel and probability calibration (`C=10.0`, `gamma='scale'`).
+- **Feature Vector:** 171 dimensions:
+  - 126 coordinate features ($21 \text{ landmarks} \times 3 \text{ coords } [x, y, z] \times 2 \text{ hand slots}$).
+  - 41 engineered geometric features (pairwise fingertip distances, palm aspect ratios).
+  - 4 inter-wrist spatial interaction features (inter-wrist Euclidean distance and orientation vector).
+- **Model File:** `models/final_isl_model.joblib` (2,021 KB).
+- **Inference Latency:** **1.64 ms** (classifier only) / **~32 ms** (end-to-end including MediaPipe tracking on CPU).
+
+### Verified Performance Benchmarks
+
+| Metric | Measured Score | Evaluation Condition |
+| :--- | :---: | :--- |
+| **Block Test Accuracy** | **96.8%** | Held-out consecutive frame blocks (no temporal leakage) |
+| **Macro F1-Score** | **96.6%** | Balanced harmonic mean across all 26 classes |
+| **Precision** | **97.1%** | Minimal false positive rate across alphabet |
+| **Validation Accuracy** | **99.5%** | Controlled studio validation partition |
+| **Mirrored Invariance** | **96.7%** | Horizontal selfie camera reflection ($x \rightarrow 1-x$) |
+| **External Generalization** | **29.4%** | Unseen signers & unconstrained lighting (`ISL_Dataset_2`) |
+| **Sample Gallery Accuracy** | **100.0%** | Authentic Indian ISL alphabet test set (26 / 26) |
+
+> 📌 **Honest Engineering Note:**  
+> While the model achieves **96.8% accuracy** on held-out blocks of the primary dataset, performance drops to **29.4%** on external unseen datasets without fine-tuning. This is an honest reflection of domain shift in computer vision (variations in camera angles, skin tones, and background clutter).
 
 ---
 
-## 🚀 Getting Started
+## 🛠️ Technology Stack
+
+- **Backend:** Python 3.12, FastAPI, Uvicorn, Pydantic, python-dotenv
+- **Computer Vision & Tracking:** Google MediaPipe Hands, OpenCV (`cv2`)
+- **Machine Learning:** Scikit-learn, NumPy, Joblib, Pandas
+- **Frontend:** Semantic HTML5, Modern CSS3 (Responsive Grid & Flexbox, WCAG 2.1 accessibility), Vanilla JavaScript (ES6+)
+- **Browser APIs:** WebRTC (`MediaDevices.getUserMedia`), Web Speech API (`SpeechSynthesis`), Canvas 2D API, Fetch API
+- **AI Integration:** Google Gemini API (via official `google-genai` SDK v3.6.1 with resilient REST fallback)
+- **Deployment & DevOps:** Docker, Render (`render.yaml`), pytest
+
+---
+
+## 💻 Installation and Local Setup
 
 ### Prerequisites
-- **Python:** 3.11 or 3.12 (MediaPipe 0.10.21 requires Python <= 3.12; scikit-learn 1.6+ requires Python >= 3.11).
-- **Virtual Environment:** Recommended.
+- Python 3.10, 3.11, or 3.12 installed
+- Git installed
+- A modern web browser (Google Chrome, Microsoft Edge, or Mozilla Firefox)
+- A working webcam (for live gesture recognition)
 
-### Installation
+### 1. Clone the Repository
 ```bash
-# 1. Create and activate virtual environment
+git clone https://github.com/Saniya1312S/isl-sign-language-app.git
+cd isl-sign-language-app
+```
+
+### 2. Create and Activate Virtual Environment
+**On Windows (PowerShell):**
+```powershell
 python -m venv .venv
-# Windows:
-.venv\Scripts\activate
-# Linux/macOS:
+.venv\Scripts\Activate.ps1
+```
+
+**On Linux / macOS:**
+```bash
+python3 -m venv .venv
 source .venv/bin/activate
+```
 
-# 2. Install core dependencies (production ML runs without PyTorch)
+### 3. Install Dependencies
+```bash
+pip install --upgrade pip
 pip install -r requirements.txt
-
-# (Optional) Install PyTorch DL dependencies
-pip install -r requirements-dl.txt
-
-# (Optional) Install offline desktop TTS dependencies
-pip install -r requirements-desktop.txt
 ```
 
-### Running the Applications
+### 4. Configure Environment Variables (Optional)
+Copy the example environment configuration:
 ```bash
-# Launch the interactive Streamlit Web Application
-streamlit run app.py
+cp .env.example .env
+```
+Open `.env` in any text editor and optionally add your Google Gemini API key:
+```env
+HOST=127.0.0.1
+PORT=8000
+GEMINI_API_KEY=your_actual_api_key_here
+```
+*(If you do not have an API key, leave it blank. The entire A–Z recognition, sentence builder, and translation pipeline will run 100% locally.)*
 
-# Launch the standalone OpenCV desktop camera feed
-python live_cam.py
+### 5. Launch the Application
+Start the FastAPI server using Uvicorn:
+```powershell
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-### Re-running the Full Evaluation Pipeline
-```bash
-# Run all evaluation stages (protocols, ablation, learning curve, compare, final)
-python scripts/train_alphabet.py --stage all
-
-# Run adaptation and legacy benchmarks
-python scripts/adaptation_study.py
-python scripts/evaluate_legacy.py
-python scripts/benchmark_latency.py
-
-# Rebuild documentation from results/*.json
-python scripts/build_docs.py
+### 6. Open in Your Browser
+Visit:
+```
+http://localhost:8000
 ```
 
 ---
 
-## 🧪 Automated Test Suite
+## 🔑 Gemini AI Setup Guide
 
-Run the full pytest suite:
-```bash
-pytest tests/ -v
-```
+1. Visit [Google AI Studio](https://aistudio.google.com/) and create a free Gemini API key.
+2. You can configure your key in either of two ways:
+   - **Method A (Server-side `.env`):** Add `GEMINI_API_KEY=your_key` to your `.env` file in the project root and restart the server.
+   - **Method B (Web UI Session):** Go to the **Gemini AI Assistant** tab in the web app, paste your key into the masked password input, and click **🔑 Connect API Key**. The key is held strictly in backend memory for the active session.
+3. The server uses the `gemini-2.0-flash` model (with `gemini-1.5-flash` fallback) to provide responses in English, Hindi, or Marathi.
 
 ---
 
-## 📄 License
-This project is licensed under the MIT License. Bundled Noto Sans Devanagari font is licensed under the SIL Open Font License (OFL).
+## 📸 Screenshots
+
+| Page 1: ISL A–Z Recognition & Landmark Overlay | Page 2: Sentence Translator & Multilingual Output |
+| :---: | :---: |
+| ![Home Recognition](docs/screenshots/home_recognition.png) | ![Sentence Translator](docs/screenshots/sentence_translator.png) |
+
+| Page 3: Gemini AI Conversational Assistant | Page 4: Educational "About Project" & Benchmarks |
+| :---: | :---: |
+| ![Gemini Assistant](docs/screenshots/gemini_assistant.png) | ![About Project](docs/screenshots/about_project.png) |
+
+*(Full live application screenshot also available in [`docs/screenshots/full_site_live.png`](docs/screenshots/full_site_live.png))*
+
+---
+
+## ⚠️ Project Limitations
+
+1. **Static Gesture Focus:** Recognizes static alphabet hand formations. It does not track temporal sign language motion or whole-sentence dynamic signs.
+2. **Sequential Fingerspelling:** Words are composed by spelling letters one after another, which is slower than conversational natural signing.
+3. **Lighting & Background Sensitivity:** Extreme backlighting or cluttered backgrounds can occasionally disrupt MediaPipe landmark detection.
+4. **Translation Scope:** Hindi and Marathi outputs are text-to-text translations of the spelled English sentence, not regional Indian sign gesture synthesis.
+5. **Camera Hardware:** Requires minimum 640x480 resolution at 15+ FPS for smooth 5-second stability accumulation.
+
+---
+
+## 🚀 Future Scope
+
+- **Dynamic Video Recognition:** Implement 3D CNN or Bi-directional LSTM / Transformer architectures for continuous gesture recognition across video frames.
+- **Whole-Word ISL Recognition:** Train on expanded datasets of complete Indian Sign Language word gestures (e.g., greetings, family, emergency, medical vocabulary).
+- **Mobile Edge Inference:** Export the SVM and MediaPipe pipeline to ONNX / TensorFlow Lite for lightweight on-device mobile applications (iOS/Android).
+- **Expanded Regional Languages:** Add translation and native speech support for additional Indian languages (Tamil, Telugu, Bengali, Gujarati, Kannada).
+
+---
+
+## 👤 Author & Credits
+
+- **Author:** Saniya Yogesh Saratkar
+- **GitHub Profile:** [@Saniya1312S](https://github.com/Saniya1312S)
+- **Repository:** [https://github.com/Saniya1312S/isl-sign-language-app](https://github.com/Saniya1312S/isl-sign-language-app)
+- **License:** [MIT License](LICENSE)
+
+*Built with passion for accessibility, assistive technology, and inclusive communication.*

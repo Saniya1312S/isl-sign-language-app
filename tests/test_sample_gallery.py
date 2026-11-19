@@ -172,3 +172,97 @@ def test_separation_alphabet_and_word_reference():
     assert len(df) == 15
     assert (df["reference_only_status"] == "Reference Only").all()
     assert (df["model_support_status"].str.contains("Not Yet Trained")).all()
+
+
+def test_batch_prediction_indian_samples():
+    """15. Test real-time batch prediction across Indian alphabet sample files."""
+    from src.safe_dataframe import calculate_batch_metrics, normalize_batch_dataframe
+    import pandas as pd
+
+    predictor = SignPredictor()
+    # Test a slice of Indian alphabet samples: A, B, C, D, E
+    test_letters = ["A", "B", "C", "D", "E"]
+    batch_rows = []
+    for letter in test_letters:
+        img_path = ALPHABET_DIR / f"{letter}.jpg"
+        assert img_path.exists()
+        img = cv2.imread(str(img_path))
+        res = predictor.predict_image(img)
+        batch_rows.append({
+            "Image": img_path.name,
+            "Source": "Indian",
+            "Expected": letter,
+            "Predicted": res.get("predicted_letter") or "None",
+            "Confidence": res.get("confidence", 0.0),
+            "Hand Detected": res.get("hand_detected", False),
+            "Result": "PASS" if res.get("predicted_letter") == letter else "FAIL",
+            "Latency (ms)": res.get("processing_time_ms", 0.0)
+        })
+
+    df = normalize_batch_dataframe(pd.DataFrame(batch_rows))
+    metrics = calculate_batch_metrics(df)
+    assert metrics["total_tested"] == 5
+    assert metrics["total_detected"] == 5
+    assert metrics["total_correct"] == 5
+    assert metrics["detection_rate"] == 1.0
+    assert metrics["overall_accuracy"] == 1.0
+
+
+def test_batch_prediction_external_and_no_hand():
+    """16. Test batch prediction with external images including no-hand and domain shift."""
+    from src.safe_dataframe import calculate_batch_metrics, normalize_batch_dataframe
+    import pandas as pd
+
+    predictor = SignPredictor()
+    ext_dir = ROOT / "samples"
+    ext_files = sorted(list(ext_dir.glob("External_*.jpg")))[:5]
+    assert len(ext_files) > 0
+
+    batch_rows = []
+    for f in ext_files:
+        lbl = f.stem.split("_")[1].upper()
+        img = cv2.imread(str(f))
+        res = predictor.predict_image(img)
+        hand_det = res.get("hand_detected", False)
+        batch_rows.append({
+            "Image": f.name,
+            "Source": "External",
+            "Expected": lbl,
+            "Predicted": res.get("predicted_letter") or "None",
+            "Confidence": res.get("confidence", 0.0),
+            "Hand Detected": hand_det,
+            "Result": "PASS" if (hand_det and res.get("predicted_letter") == lbl) else "FAIL",
+            "Latency (ms)": res.get("processing_time_ms", 0.0)
+        })
+
+    df = normalize_batch_dataframe(pd.DataFrame(batch_rows))
+    metrics = calculate_batch_metrics(df)
+    assert metrics["total_tested"] == len(ext_files)
+    assert 0.0 <= metrics["detection_rate"] <= 1.0
+    assert 0.0 <= metrics["overall_accuracy"] <= 1.0
+
+
+def test_batch_prediction_error_tolerance_and_corrupt_files():
+    """17. Test batch execution error tolerance with missing and corrupt files."""
+    from src.safe_dataframe import calculate_batch_metrics, normalize_batch_dataframe
+    import pandas as pd
+
+    # Synthetic batch with missing file, corrupt file, blank image, valid file
+    batch_rows = [
+        {"Image": "missing.jpg", "Source": "Test", "Expected": "A", "Predicted": "None",
+         "Confidence": 0.0, "Hand Detected": False, "Result": "FAIL", "Latency (ms)": 0.0, "Status": "missing_file"},
+        {"Image": "corrupt.jpg", "Source": "Test", "Expected": "B", "Predicted": "None",
+         "Confidence": 0.0, "Hand Detected": False, "Result": "FAIL", "Latency (ms)": 0.0, "Status": "corrupt_image"},
+        {"Image": "A.jpg", "Source": "Indian", "Expected": "A", "Predicted": "A",
+         "Confidence": 0.98, "Hand Detected": True, "Result": "PASS", "Latency (ms)": 15.0, "Status": "success"}
+    ]
+
+    df = normalize_batch_dataframe(pd.DataFrame(batch_rows))
+    metrics = calculate_batch_metrics(df)
+    assert metrics["total_tested"] == 3
+    assert metrics["total_detected"] == 1
+    assert metrics["total_correct"] == 1
+    assert metrics["detection_rate"] == pytest.approx(1 / 3)
+    assert metrics["overall_accuracy"] == pytest.approx(1 / 3)
+    assert metrics["accuracy_on_detected"] == 1.0
+
