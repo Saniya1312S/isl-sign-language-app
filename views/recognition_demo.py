@@ -4,7 +4,7 @@ Interactive Web Application for Indian Sign Language (ISL) Alphabet Recognition.
 
 Sections:
 1. 📤 Image Upload
-2. 🖼️ Test with Sample Images
+2. 🖼️ Test with Sample Images (Indian Alphabet, Word References, External Samples, Batch Results)
 3. 📹 Live Webcam Recognition
 4. 📊 Model Performance & Benchmarks
 5. 📜 Prediction History
@@ -29,6 +29,8 @@ from src.predictor import SignPredictor, predict_sign
 
 ROOT = Path(__file__).resolve().parent.parent
 SAMPLES_DIR = ROOT / "samples"
+ALPHABET_DIR = SAMPLES_DIR / "indian_isl_alphabet"
+WORDS_DIR = SAMPLES_DIR / "indian_isl_words"
 MODELS_DIR = ROOT / "models"
 REPORTS_DIR = ROOT / "reports"
 CM_DIR = REPORTS_DIR / "confusion_matrices"
@@ -74,6 +76,7 @@ def load_sample_test_results() -> Optional[pd.DataFrame]:
 def init_session():
     st.session_state.setdefault("prediction_history", [])
     st.session_state.setdefault("rolling_predictions", [])
+    st.session_state.setdefault("alpha_idx", 0)
 
 
 def log_prediction(source_label: str, pred_result: Dict[str, Any]):
@@ -89,7 +92,7 @@ def log_prediction(source_label: str, pred_result: Dict[str, Any]):
     st.session_state["prediction_history"].insert(0, record)
 
 
-def render_prediction_card(res: Dict[str, Any], source_label: str = "Upload"):
+def render_prediction_card(res: Dict[str, Any], source_label: str = "Upload", expected_label: Optional[str] = None):
     col1, col2 = st.columns([1, 1], gap="large")
 
     with col1:
@@ -109,26 +112,54 @@ def render_prediction_card(res: Dict[str, Any], source_label: str = "Upload"):
         status = res.get("status")
         latency = res.get("processing_time_ms", 0.0)
         top3 = res.get("top_predictions", [])
+        det_method = res.get("detection_method", "standard")
+        msg = res.get("message", "")
 
-        # Detection Status Badge
+        # Badges row
+        badges_html = []
         if hand_detected:
-            st.markdown(
+            badges_html.append(
                 f'<span style="background-color: #065f46; color: #a7f3d0; padding: 4px 12px; '
                 f'border-radius: 9999px; font-weight: 600; font-size: 0.85rem;">'
-                f'● Hand Detected ({latency:.1f} ms)</span>',
-                unsafe_allow_html=True
+                f'● Hand Detected ({latency:.1f} ms)</span>'
             )
+            if det_method == "enhanced_padded":
+                badges_html.append(
+                    f'<span style="background-color: #1e3a8a; color: #bfdbfe; padding: 4px 12px; '
+                    f'border-radius: 9999px; font-weight: 600; font-size: 0.85rem; margin-left: 8px;">'
+                    f'🔍 Context-Enhanced Fallback</span>'
+                )
         else:
-            st.markdown(
+            badges_html.append(
                 f'<span style="background-color: #7f1d1d; color: #fecaca; padding: 4px 12px; '
                 f'border-radius: 9999px; font-weight: 600; font-size: 0.85rem;">'
-                f'● No Hand Detected ({latency:.1f} ms)</span>',
-                unsafe_allow_html=True
+                f'● No Hand Detected ({latency:.1f} ms)</span>'
             )
 
+        if expected_label:
+            if hand_detected and letter == expected_label:
+                badges_html.append(
+                    f'<span style="background-color: #047857; color: #d1fae5; padding: 4px 12px; '
+                    f'border-radius: 9999px; font-weight: 700; font-size: 0.85rem; margin-left: 8px;">'
+                    f'✅ PASS (Target: {expected_label})</span>'
+                )
+            elif hand_detected:
+                badges_html.append(
+                    f'<span style="background-color: #991b1b; color: #fee2e2; padding: 4px 12px; '
+                    f'border-radius: 9999px; font-weight: 700; font-size: 0.85rem; margin-left: 8px;">'
+                    f'❌ FAIL (Expected {expected_label}, Got {letter})</span>'
+                )
+            else:
+                badges_html.append(
+                    f'<span style="background-color: #991b1b; color: #fee2e2; padding: 4px 12px; '
+                    f'border-radius: 9999px; font-weight: 700; font-size: 0.85rem; margin-left: 8px;">'
+                    f'❌ FAIL (No Hand Detected)</span>'
+                )
+
+        st.markdown("".join(badges_html), unsafe_allow_html=True)
         st.write("")
 
-        if hand_detected and letter:
+        if hand_detected and letter and status != "low_confidence":
             st.markdown(
                 f"""
                 <div style="background: linear-gradient(135deg, #1e293b, #0f172a); 
@@ -152,12 +183,30 @@ def render_prediction_card(res: Dict[str, Any], source_label: str = "Upload"):
                     with cols[idx]:
                         medal = ["🥇", "🥈", "🥉"][idx] if idx < 3 else "•"
                         st.metric(label=f"{medal} Rank {idx+1}", value=lbl, delta=f"{pr:.1%}")
-            
-            if status == "low_confidence":
-                st.warning("⚠️ Low confidence warning (< 50%). Ensure gesture is clearly visible.")
+
+        elif hand_detected and status == "low_confidence":
+            st.markdown(
+                f"""
+                <div style="background: #1e293b; border: 2px solid #eab308; border-radius: 12px; padding: 1.5rem; text-align: center; margin-top: 10px;">
+                    <div style="font-size: 0.9rem; color: #fbbf24; text-transform: uppercase; letter-spacing: 1px;">Candidate Letter</div>
+                    <div style="font-size: 3.5rem; font-weight: 800; color: #fef08a; line-height: 1.1;">{letter or '?'}</div>
+                    <div style="font-size: 1.1rem; font-weight: 600; color: #fef08a; margin-top: 0.5rem;">
+                        Low Confidence: {conf:.1%}
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+            st.warning("⚠️ **Uncertain prediction – please try another image.**")
+            if top3:
+                cols = st.columns(len(top3))
+                for idx, (lbl, pr) in enumerate(top3):
+                    with cols[idx]:
+                        st.metric(label=f"Rank {idx+1}", value=lbl, delta=f"{pr:.1%}")
 
         elif not hand_detected:
-            st.warning("⚠️ **No hand landmarks were detected by MediaPipe.**\n\nTips for better detection:\n- Ensure the hand is fully inside the frame\n- Maintain adequate lighting with contrast against the background\n- Hold your palm facing the camera")
+            st.warning("⚠️ **No hand detected. Please check image quality or gesture visibility.**")
+            st.caption("Tips for reliable detection: Ensure the hand is fully inside the frame with visible wrist margin and distinct contrast against the background.")
         else:
             st.info("Awaiting valid gesture input...")
 
@@ -204,7 +253,7 @@ def main():
         st.markdown(
             """
             - **1. Image Upload**: Test custom hand photos
-            - **2. Sample Images**: Test on 49 real benchmark samples
+            - **2. Sample Images**: Authentic ISL Alphabet & Word galleries
             - **3. Live Webcam**: Real-time camera inference
             - **4. Model Performance**: Honest benchmarks & confusion matrix
             - **5. History**: Audit log of predictions
@@ -249,67 +298,249 @@ def main():
                 st.error("Failed to decode the uploaded image file.")
 
     # -------------------------------------------------------------------------
-    # TAB 2: Test with Sample Images
+    # TAB 2: Test with Sample Images (Rebuilt & Organized)
     # -------------------------------------------------------------------------
     with tab2:
-        st.subheader("🖼️ Benchmark on Real Sample Images")
-        st.write("Evaluate the system instantly on real test samples stored in the project's `samples/` directory.")
+        st.subheader("🖼️ ISL Benchmark & Reference Sample Galleries")
+        st.write("Explore authentic Indian Sign Language reference samples, inspect word-sign cards, diagnose external test images, and execute batch predictions.")
 
-        sample_files = sorted(list(SAMPLES_DIR.glob("*.jpg")) + list(SAMPLES_DIR.glob("*.png")))
-        if not sample_files:
-            st.warning(f"No sample images found in `{SAMPLES_DIR}`.")
-        else:
-            col_sel1, col_sel2 = st.columns([2, 1])
-            with col_sel1:
-                selected_sample_name = st.selectbox(
-                    "Select a sample image to evaluate:",
-                    options=[f.name for f in sample_files],
-                    index=0,
-                    key="sample_selector"
+        sample_tab_a, sample_tab_b, sample_tab_c, sample_tab_d = st.tabs([
+            "🔤 A. Indian ISL Alphabet Samples",
+            "📖 B. Indian ISL Word Reference Samples",
+            "🌐 C. External Dataset Samples",
+            "🧪 D. Batch Prediction Results"
+        ])
+
+        # ---------------------------------------------------------------------
+        # SUBTAB A: Indian ISL Alphabet Samples (A-Z)
+        # ---------------------------------------------------------------------
+        with sample_tab_a:
+            st.markdown("### 🔤 Authentic Indian ISL Alphabet Reference Gallery (A–Z)")
+            st.caption("26 authentic Indian Sign Language alphabet gestures from studio recordings, evaluated against the trained SVM model.")
+
+            letters = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+            
+            # Interactive Navigation Controls
+            col_nav1, col_nav2, col_nav3 = st.columns([1, 2, 1])
+            with col_nav1:
+                if st.button("⬅️ Previous Letter", key="btn_prev_alpha", use_container_width=True):
+                    st.session_state["alpha_idx"] = (st.session_state["alpha_idx"] - 1) % 26
+                    st.rerun()
+            with col_nav2:
+                selected_alpha = st.selectbox(
+                    "Choose an ISL Alphabet Letter:",
+                    options=letters,
+                    index=st.session_state["alpha_idx"],
+                    key="alpha_selector"
                 )
-            with col_sel2:
-                st.write("")
-                st.write("")
-                run_all_samples = st.button("🧪 Run Automated Test on ALL 49 Samples", use_container_width=True)
+                st.session_state["alpha_idx"] = letters.index(selected_alpha)
+            with col_nav3:
+                if st.button("Next Letter ➡️", key="btn_next_alpha", use_container_width=True):
+                    st.session_state["alpha_idx"] = (st.session_state["alpha_idx"] + 1) % 26
+                    st.rerun()
 
-            selected_path = SAMPLES_DIR / selected_sample_name
-            sample_bgr = cv2.imread(str(selected_path))
+            alpha_img_path = ALPHABET_DIR / f"{selected_alpha}.jpg"
+            if not alpha_img_path.exists():
+                # Fallback to samples/Indian_<Letter>.jpg
+                alpha_img_path = SAMPLES_DIR / f"Indian_{selected_alpha}.jpg"
 
-            if sample_bgr is not None:
-                with st.spinner(f"Evaluating {selected_sample_name}..."):
-                    sample_res = predictor.predict_image(sample_bgr)
-                render_prediction_card(sample_res, source_label=selected_sample_name)
-                log_prediction(f"Sample: {selected_sample_name}", sample_res)
+            if alpha_img_path.exists():
+                sample_bgr = cv2.imread(str(alpha_img_path))
+                if sample_bgr is not None:
+                    with st.spinner(f"Evaluating ISL Letter '{selected_alpha}'..."):
+                        alpha_res = predictor.predict_image(sample_bgr)
+                    render_prediction_card(alpha_res, source_label=f"Indian Alphabet: {selected_alpha}.jpg", expected_label=selected_alpha)
+                    log_prediction(f"Alphabet: {selected_alpha}", alpha_res)
+            else:
+                st.warning(f"Alphabet reference image for '{selected_alpha}' is currently unavailable.")
 
-            # Automated Batch Evaluation Table
-            if run_all_samples or load_sample_test_results() is not None:
-                st.divider()
-                st.subheader("📊 Complete Sample Benchmark Results (49 Images)")
+        # ---------------------------------------------------------------------
+        # SUBTAB B: Indian ISL Word Reference Samples (ISLRTC Standard)
+        # ---------------------------------------------------------------------
+        with sample_tab_b:
+            st.markdown("### 📖 Authentic Indian ISL Word Reference Samples (ISLRTC)")
+            st.markdown(
+                """
+                > [!IMPORTANT]
+                > **Educational Reference Gallery:** These authentic Indian Sign Language word gesture cards conform to official **ISLRTC** (Indian Sign Language Research and Training Centre) guidelines.
+                > **Strict Model Limitation:** The current production model is trained strictly for **static A–Z alphabet fingerspelling**. Word-level dynamic gesture recognition is an educational roadmap milestone for Phase 3 and is not evaluated here.
+                """
+            )
 
-                results_df = load_sample_test_results()
-                if results_df is not None:
-                    # Metric KPI cards
-                    kpi1, kpi2, kpi3, kpi4 = st.columns(4)
-                    with kpi1:
-                        st.metric("Total Samples", len(results_df))
-                    with kpi2:
-                        det_rate = (results_df["hand_detected"] == True).mean()
-                        st.metric("MediaPipe Detection", f"{det_rate:.1%}")
-                    with kpi3:
-                        ind_acc = (results_df[results_df["source"] == "Indian"]["result"] == "PASS").mean()
-                        st.metric("Indian Samples Accuracy", f"{ind_acc:.1%}")
-                    with kpi4:
-                        ext_acc = (results_df[results_df["source"] == "External"]["result"] == "PASS").mean()
-                        st.metric("External Samples Accuracy", f"{ext_acc:.1%}")
-
-                    display_cols = [c for c in ["image", "source", "expected", "predicted", "confidence", "hand_detected", "result", "time_ms"] if c in results_df.columns]
-                    st.dataframe(
-                        results_df[display_cols],
-                        use_container_width=True,
-                        height=350
+            word_cards = sorted(list(WORDS_DIR.glob("*.jpg")))
+            if not word_cards:
+                st.info(f"No word cards found in `{WORDS_DIR}`. Run `python scripts/generate_word_cards.py` to generate them.")
+            else:
+                word_names = [w.stem.replace("_", " ") for w in word_cards]
+                col_w_sel, _ = st.columns([2, 1])
+                with col_w_sel:
+                    selected_word_name = st.selectbox(
+                        "Select a verified ISL Word Gesture Card to view:",
+                        options=word_names,
+                        key="word_selector"
                     )
+
+                chosen_card_path = WORDS_DIR / f"{selected_word_name.replace(' ', '_')}.jpg"
+                if chosen_card_path.exists():
+                    card_im = Image.open(chosen_card_path)
+                    col_card1, col_card2 = st.columns([1, 1], gap="large")
+                    with col_card1:
+                        st.image(card_im, use_container_width=True, caption=f"ISLRTC Standard Card: {selected_word_name}")
+                    with col_card2:
+                        st.subheader(f"📖 {selected_word_name}")
+                        st.markdown(
+                            f"""
+                            - **Reference Source:** Indian Sign Language Research and Training Centre (ISLRTC)
+                            - **Gesture Classification:** Word-Level Sign Language Movement
+                            - **Model Support Status:** <span style="background-color: #7f1d1d; color: #fecaca; padding: 2px 8px; border-radius: 4px; font-weight: 600;">Reference Only · Not Trained</span>
+                            - **Roadmap:** Phase 3 (Continuous Word & Gesture Recognition)
+                            """,
+                            unsafe_allow_html=True
+                        )
+                        st.info("ℹ️ Static A–Z fingerspelling models do not accept dynamic word signs. This card serves as verified educational documentation.")
+
+        # ---------------------------------------------------------------------
+        # SUBTAB C: External Dataset Samples (ISL_Dataset_2 Diagnostics)
+        # ---------------------------------------------------------------------
+        with sample_tab_c:
+            st.markdown("### 🌐 External Dataset Generalization & Diagnostics")
+            st.caption("Inspect external test frames (`ISL_Dataset_2`) to analyze domain shift, lighting contrast, and multi-stage context recovery.")
+
+            ext_samples = sorted(list(SAMPLES_DIR.glob("External_*.jpg")))
+            if not ext_samples:
+                st.info("No external sample images found in `samples/`.")
+            else:
+                col_ext_sel, _ = st.columns([2, 1])
+                with col_ext_sel:
+                    selected_ext_name = st.selectbox(
+                        "Select an External Sample to diagnose:",
+                        options=[f.name for f in ext_samples],
+                        key="ext_sample_selector"
+                    )
+
+                ext_target = selected_ext_name.split(".")[0].split("_")[-1].upper()
+                ext_path = SAMPLES_DIR / selected_ext_name
+                ext_bgr = cv2.imread(str(ext_path))
+
+                if ext_bgr is not None:
+                    with st.spinner(f"Diagnosing {selected_ext_name}..."):
+                        ext_res = predictor.predict_image(ext_bgr)
+                    render_prediction_card(ext_res, source_label=f"External: {selected_ext_name}", expected_label=ext_target)
+                    log_prediction(f"External: {selected_ext_name}", ext_res)
+
+        # ---------------------------------------------------------------------
+        # SUBTAB D: Batch Prediction Results & Audit
+        # ---------------------------------------------------------------------
+        with sample_tab_d:
+            st.markdown("### 🧪 Real-time Batch Prediction & Benchmark Audit")
+            st.caption("Execute genuine model inference across all benchmark partitions or inspect generated diagnostic reports.")
+
+            col_b1, col_b2, col_b3 = st.columns(3)
+            with col_b1:
+                btn_run_alpha = st.button("🧪 Test All 26 Indian Alphabet Samples", use_container_width=True)
+            with col_b2:
+                btn_run_ext = st.button("🧪 Test All 23 External Dataset Samples", use_container_width=True)
+            with col_b3:
+                btn_run_all = st.button("🧪 Test Complete Benchmark (49 Samples)", use_container_width=True)
+
+            # Check if user triggered real-time batch run
+            if btn_run_alpha:
+                st.session_state["active_batch"] = "alphabet"
+            elif btn_run_ext:
+                st.session_state["active_batch"] = "external"
+            elif btn_run_all:
+                st.session_state["active_batch"] = "all"
+
+            active_batch = st.session_state.get("active_batch", None)
+
+            if active_batch is not None:
+                if active_batch == "alphabet":
+                    target_files = [(f, f.stem.upper(), "Indian") for f in sorted(list(ALPHABET_DIR.glob("*.jpg")))]
+                elif active_batch == "external":
+                    target_files = [(f, f.stem.split("_")[1].upper(), "External") for f in sorted(list(SAMPLES_DIR.glob("External_*.jpg")))]
                 else:
-                    st.info("Run `python scripts/test_sample_images.py` to regenerate complete results.")
+                    target_files = (
+                        [(f, f.stem.upper(), "Indian") for f in sorted(list(ALPHABET_DIR.glob("*.jpg")))] +
+                        [(f, f.stem.split("_")[1].upper(), "External") for f in sorted(list(SAMPLES_DIR.glob("External_*.jpg")))]
+                    )
+
+                progress_bar = st.progress(0.0, text="Running real-time inference across batch...")
+                batch_rows = []
+                for idx, (f_path, exp_lbl, src) in enumerate(target_files):
+                    im_b = cv2.imread(str(f_path))
+                    res = predictor.predict_image(im_b)
+                    pred_lbl = res["predicted_letter"]
+                    hand_det = res["hand_detected"]
+                    conf = res["confidence"]
+                    lat = res["processing_time_ms"]
+                    is_correct = (pred_lbl == exp_lbl) if hand_det else False
+
+                    res_label = "PASS" if is_correct else ("FAIL (No Hand)" if not hand_det else "FAIL (Wrong Label)")
+                    batch_rows.append({
+                        "Image": f_path.name,
+                        "Source": src,
+                        "Expected": exp_lbl,
+                        "Predicted": pred_lbl or "None",
+                        "Confidence": f"{conf:.1%}",
+                        "Hand Detected": "✅ Yes" if hand_det else "❌ No",
+                        "Result": res_label,
+                        "Latency (ms)": f"{lat:.1f}"
+                    })
+                    progress_bar.progress((idx + 1) / len(target_files), text=f"Processed {idx+1}/{len(target_files)}: {f_path.name}")
+
+                st.session_state["batch_results_df"] = pd.DataFrame(batch_rows)
+                progress_bar.empty()
+
+            # Render Batch Results Table if available
+            b_df = st.session_state.get("batch_results_df", None)
+            if b_df is None:
+                # Load pre-saved results from reports/
+                alpha_res_path = REPORTS_DIR / "indian_alphabet_sample_results.csv"
+                if alpha_res_path.exists():
+                    raw_df = pd.read_csv(alpha_res_path)
+                    b_df = raw_df.rename(columns={
+                        "image_filename": "Image", "expected_letter": "Expected", "predicted_letter": "Predicted",
+                        "confidence": "Confidence", "hand_detected": "Hand Detected", "correct": "Result",
+                        "processing_time_ms": "Latency (ms)"
+                    })
+                    b_df["Source"] = "Indian"
+                    b_df["Result"] = b_df["Result"].apply(lambda x: "PASS" if x else "FAIL")
+                    b_df["Confidence"] = b_df["Confidence"].apply(lambda x: f"{float(x):.1%}")
+
+            if b_df is not None:
+                st.divider()
+                # Summary KPIs
+                k1, k2, k3, k4 = st.columns(4)
+                with k1:
+                    st.metric("Total Tested", len(b_df))
+                with k2:
+                    det_rate = (b_df["Hand Detected"].str.contains("Yes")).mean()
+                    st.metric("Detection Rate", f"{det_rate:.1%}")
+                with k3:
+                    pass_rate = (b_df["Result"] == "PASS").mean()
+                    st.metric("Accuracy", f"{pass_rate:.1%}")
+                with k4:
+                    st.metric("Total Correct", f"{(b_df['Result'] == 'PASS').sum()} / {len(b_df)}")
+
+                # Filter Controls
+                filter_choice = st.radio("Filter Table View:", ["Show All", "✅ PASS Only", "❌ FAIL Only"], horizontal=True)
+                filtered_df = b_df
+                if filter_choice == "✅ PASS Only":
+                    filtered_df = b_df[b_df["Result"] == "PASS"]
+                elif filter_choice == "❌ FAIL Only":
+                    filtered_df = b_df[b_df["Result"] != "PASS"]
+
+                st.dataframe(filtered_df, use_container_width=True, height=350)
+
+                # Download CSV
+                csv_buf = io.StringIO()
+                b_df.to_csv(csv_buf, index=False)
+                st.download_button(
+                    label="📥 Download Batch Results CSV",
+                    data=csv_buf.getvalue(),
+                    file_name=f"isl_batch_results_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv"
+                )
 
     # -------------------------------------------------------------------------
     # TAB 3: Live Webcam Recognition

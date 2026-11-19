@@ -47,6 +47,7 @@ class DetectedHand:
     label: str                  # "Left" or "Right" as reported by MediaPipe
     score: float                # confidence score
     raw_landmarks: object = None
+    detection_method: str = "standard"  # "standard" or "enhanced_padded"
 
     @property
     def wrist_x(self) -> float:
@@ -54,32 +55,43 @@ class DetectedHand:
 
 
 class MediaPipeHandDetector:
-    """Wrapper around mp.solutions.hands.Hands."""
+    """Wrapper around mp.solutions.hands.Hands with multi-stage fallback."""
 
     def __init__(self, static_image_mode: bool = True, max_num_hands: int = 2,
                  min_detection_confidence: float = 0.5, min_tracking_confidence: float = 0.5):
         if mp is None or not hasattr(mp, "solutions") or not hasattr(mp.solutions, "hands"):
             raise RuntimeError("MediaPipe with `solutions.hands` is required. Please install mediapipe.")
-        self._hands = mp.solutions.hands.Hands(
+        self.max_num_hands = max_num_hands
+        self._hands_std = mp.solutions.hands.Hands(
             static_image_mode=static_image_mode,
             max_num_hands=max_num_hands,
             model_complexity=1,
             min_detection_confidence=min_detection_confidence,
             min_tracking_confidence=min_tracking_confidence
         )
+        # Enhanced fallback detector with lower confidence threshold for tightly cropped / challenging images
+        self._hands_fallback = mp.solutions.hands.Hands(
+            static_image_mode=static_image_mode,
+            max_num_hands=max_num_hands,
+            model_complexity=1,
+            min_detection_confidence=0.20,
+            min_tracking_confidence=0.20
+        )
 
-    def detect_bgr(self, bgr_image: np.ndarray) -> List[DetectedHand]:
-        """Detect hands in a BGR image."""
+    def detect_bgr(self, bgr_image: np.ndarray, enable_fallback: bool = True) -> List[DetectedHand]:
+        """Detect hands in a BGR image, using multi-stage context fallback if needed."""
         if bgr_image is None or bgr_image.size == 0:
             return []
         rgb = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
-        return self.detect_rgb(rgb)
+        return self.detect_rgb(rgb, enable_fallback=enable_fallback)
 
-    def detect_rgb(self, rgb_image: np.ndarray) -> List[DetectedHand]:
+    def detect_rgb(self, rgb_image: np.ndarray, enable_fallback: bool = True) -> List[DetectedHand]:
         """Detect hands in an RGB image."""
         if rgb_image is None or rgb_image.size == 0:
             return []
-        res = self._hands.process(np.ascontiguousarray(rgb_image))
+
+        # 1. Standard detection attempt on raw image
+        res = self._hands_std.process(np.ascontiguousarray(rgb_image))
         hands: List[DetectedHand] = []
         if res.multi_hand_landmarks:
             handedness = res.multi_handedness or [None] * len(res.multi_hand_landmarks)
@@ -87,10 +99,42 @@ class MediaPipeHandDetector:
                 coords = np.array([[p.x, p.y, p.z] for p in lms.landmark], dtype=np.float32)
                 label = h.classification[0].label if (h and h.classification) else ""
                 score = float(h.classification[0].score) if (h and h.classification) else 1.0
-                hands.append(DetectedHand(landmarks=coords, label=label, score=score, raw_landmarks=lms))
-        # Canonical order: sort by wrist x-coordinate (image-left hand first)
-        hands = sorted(hands, key=lambda h: h.wrist_x)[:2]
-        return hands
+                hands.append(DetectedHand(landmarks=coords, label=label, score=score,
+                                          raw_landmarks=lms, detection_method="standard"))
+            # Canonical order: sort by wrist x-coordinate (image-left hand first)
+            hands = sorted(hands, key=lambda h: h.wrist_x)[:self.max_num_hands]
+            return hands
+
+        if not enable_fallback:
+            return []
+
+        # 2. Enhanced Fallback: Contextual gray padding to restore palm detector margin
+        H_orig, W_orig = rgb_image.shape[:2]
+        pad = max(16, int(min(H_orig, W_orig) * 0.18))
+        padded = cv2.copyMakeBorder(rgb_image, pad, pad, pad, pad, cv2.BORDER_CONSTANT, value=[128, 128, 128])
+        H_pad, W_pad = padded.shape[:2]
+
+        res_fb = self._hands_fallback.process(np.ascontiguousarray(padded))
+        if res_fb.multi_hand_landmarks:
+            handedness = res_fb.multi_handedness or [None] * len(res_fb.multi_hand_landmarks)
+            for lms, h in zip(res_fb.multi_hand_landmarks, handedness):
+                coords = []
+                for p in lms.landmark:
+                    x_pix = p.x * W_pad - pad
+                    y_pix = p.y * H_pad - pad
+                    x_orig = float(np.clip(x_pix / W_orig, 0.0, 1.0))
+                    y_orig = float(np.clip(y_pix / H_orig, 0.0, 1.0))
+                    coords.append([x_orig, y_orig, p.z])
+                coords_arr = np.array(coords, dtype=np.float32)
+                label = h.classification[0].label if (h and h.classification) else ""
+                score = float(h.classification[0].score) if (h and h.classification) else 1.0
+                hands.append(DetectedHand(landmarks=coords_arr, label=label, score=score,
+                                          raw_landmarks=lms, detection_method="enhanced_padded"))
+            # Canonical order: sort by wrist x-coordinate (image-left hand first)
+            hands = sorted(hands, key=lambda h: h.wrist_x)[:self.max_num_hands]
+            return hands
+
+        return []
 
 
 def canonical_order(coords: np.ndarray, n_hands: np.ndarray) -> np.ndarray:

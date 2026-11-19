@@ -161,10 +161,13 @@ def extract_features_from_image(image: np.ndarray, detector: Optional[MediaPipeH
     n_hands_arr = np.array([len(hands)], dtype=int)
     feat_vector = build_features(coords, n_hands_arr, mode=mode, labels=labels)
 
+    det_method = hands[0].detection_method if hands else "none"
+
     return {
         "landmarks": hands,
         "features": feat_vector,
         "n_hands": len(hands),
         "status": "success",
-        "annotated_image": annotated
+        "annotated_image": annotated,
+        "detection_method": det_method
     }

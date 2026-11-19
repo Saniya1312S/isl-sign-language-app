@@ -39,12 +39,12 @@ class SignPredictor:
             self.metadata = json.loads(self.meta_path.read_text(encoding="utf-8"))
             self.classes = self.metadata.get("class_labels", list("ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
             self.feature_mode = self.metadata.get("feature_mode", "norm_eng")
-            self.min_confidence = self.metadata.get("default_confidence_threshold", min_confidence)
+            self.min_confidence = min_confidence if min_confidence is not None else self.metadata.get("default_confidence_threshold", 0.50)
         else:
             self.metadata = {}
             self.classes = list(getattr(self.model, "classes_", list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")))
             self.feature_mode = "norm_eng"
-            self.min_confidence = min_confidence
+            self.min_confidence = min_confidence if min_confidence is not None else 0.50
 
     def predict_image(self, image: np.ndarray,
                       detector: Optional[MediaPipeHandDetector] = None) -> Dict[str, Any]:
@@ -59,6 +59,7 @@ class SignPredictor:
 
         if status != "success" or feat_res["features"] is None:
             elapsed_ms = (time.perf_counter() - t0) * 1000
+            msg = "No hand detected. Please check image quality or gesture visibility." if status == "no_hand_detected" else "Invalid image provided."
             return {
                 "predicted_letter": None,
                 "confidence": 0.0,
@@ -66,10 +67,13 @@ class SignPredictor:
                 "hand_detected": False,
                 "processing_time_ms": round(elapsed_ms, 2),
                 "annotated_image": annotated_image,
-                "status": "no_hand_detected" if status == "no_hand_detected" else "invalid_image"
+                "status": "no_hand_detected" if status == "no_hand_detected" else "invalid_image",
+                "detection_method": "none",
+                "message": msg
             }
 
         X = feat_res["features"]
+        det_method = feat_res.get("detection_method", "standard")
 
         # Prediction probabilities
         if hasattr(self.model, "predict_proba"):
@@ -97,15 +101,20 @@ class SignPredictor:
         pred_status = "success"
         if best_conf < self.min_confidence:
             pred_status = "low_confidence"
+            msg = "Uncertain prediction – please try another image."
+        else:
+            msg = f"Recognized letter {best_label} ({best_conf:.1%})"
 
         return {
-            "predicted_letter": best_label if pred_status == "success" else best_label,
+            "predicted_letter": best_label,
             "confidence": best_conf,
             "top_predictions": top_predictions,
             "hand_detected": True,
             "processing_time_ms": round(elapsed_ms, 2),
             "annotated_image": annotated_image,
-            "status": pred_status
+            "status": pred_status,
+            "detection_method": det_method,
+            "message": msg
         }
 
 

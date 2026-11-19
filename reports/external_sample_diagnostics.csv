@@ -1,0 +1,24 @@
+image_filename,expected_letter,standard_detected,enhanced_detected,detection_method,predicted_letter,confidence,failure_reason,processing_time_ms
+External_A.jpg,A,True,True,standard,J,0.6564,Signer domain shift (predicted J instead of A),45.12
+External_B.jpg,B,False,False,none,None,0.0,"Tight crop (<10% margin), dark/low-contrast skin boundary, wrist anchor absent in 128x128 frame",90.02
+External_C.jpg,C,False,False,none,None,0.0,"Tight crop (<10% margin), dark/low-contrast skin boundary, wrist anchor absent in 128x128 frame",74.45
+External_D.jpg,D,False,False,none,None,0.0,"Tight crop (<10% margin), dark/low-contrast skin boundary, wrist anchor absent in 128x128 frame",46.9
+External_E.jpg,E,True,True,standard,A,0.3931,Signer domain shift (predicted A instead of E),53.7
+External_F.jpg,F,True,True,standard,F,0.7072,None (Successfully detected and correctly predicted),53.91
+External_G.jpg,G,False,False,none,None,0.0,"Tight crop (<10% margin), dark/low-contrast skin boundary, wrist anchor absent in 128x128 frame",42.59
+External_I.jpg,I,False,False,none,None,0.0,"Tight crop (<10% margin), dark/low-contrast skin boundary, wrist anchor absent in 128x128 frame",39.93
+External_K.jpg,K,False,False,none,None,0.0,"Tight crop (<10% margin), dark/low-contrast skin boundary, wrist anchor absent in 128x128 frame",42.89
+External_L.jpg,L,True,True,enhanced_padded,C,0.2409,Signer domain shift (predicted C instead of L),90.88
+External_M.jpg,M,True,True,standard,R,0.3529,Signer domain shift (predicted R instead of M),60.02
+External_N.jpg,N,True,True,standard,F,0.5811,Signer domain shift (predicted F instead of N),42.51
+External_O.jpg,O,True,True,enhanced_padded,B,0.7891,Signer domain shift (predicted B instead of O),78.56
+External_P.jpg,P,True,True,standard,D,0.5208,Signer domain shift (predicted D instead of P),52.87
+External_Q.jpg,Q,True,True,enhanced_padded,Y,0.227,Signer domain shift (predicted Y instead of Q),76.16
+External_R.jpg,R,True,True,standard,H,0.9822,Signer domain shift (predicted H instead of R),34.85
+External_S.jpg,S,True,True,standard,S,0.7675,None (Successfully detected and correctly predicted),36.31
+External_T.jpg,T,True,True,standard,Y,0.9493,Signer domain shift (predicted Y instead of T),83.6
+External_U.jpg,U,True,True,standard,Y,0.8229,Signer domain shift (predicted Y instead of U),63.98
+External_V.jpg,V,True,True,enhanced_padded,V,0.7692,None (Successfully detected and correctly predicted),75.69
+External_W.jpg,W,True,True,standard,R,0.3422,Signer domain shift (predicted R instead of W),35.81
+External_X.jpg,X,True,True,standard,Y,0.3871,Signer domain shift (predicted Y instead of X),92.13
+External_Z.jpg,Z,True,True,enhanced_padded,Z,0.3606,None (Successfully detected and correctly predicted),121.69
