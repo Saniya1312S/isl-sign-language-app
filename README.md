@@ -1,6 +1,6 @@
 # 🤟 Indian Sign Language (ISL) Recognition & AI Multilingual Bridge
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Online%20(HTTPS)-brightgreen?style=for-the-badge&logo=cloudflare)](https://shoulder-simply-coordinates-row.trycloudflare.com)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Online%20(HTTPS)-brightgreen?style=for-the-badge&logo=cloudflare)](https://battle-computed-threshold-carnival.trycloudflare.com)
 [![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Modern%20Async-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Google Gemini](https://img.shields.io/badge/Google%20Gemini-2.5%20Flash%20LLM-8E75B2?style=for-the-badge&logo=google-gemini&logoColor=white)](https://ai.google.dev/)
@@ -10,19 +10,23 @@
 
 ---
 
-### 🖥️ Full Application Live Dashboard
-![ISL Live Application Dashboard](docs/screenshots/full_site_live.png)
+### 🎥 Live Web Application Video Demo
+[![Watch Live Web Demo](docs/screenshots/live_web_demo.gif)](https://battle-computed-threshold-carnival.trycloudflare.com)
+
+> 👆 **Click the live video animation above to open the active website** with webcam recognition, fingerspelling sentence construction, Hindi/Marathi translation, and conversational Gemini AI!
 
 > **Empowering Inclusive Communication:**  
 > A zero-typing, hands-free multimodal AI system that bridges the communication gap for the Deaf and Hard-of-Hearing community. Deaf signers can interact naturally with conversational AI, translate sign gestures into spoken English, Hindi, and Marathi, and converse with the world without touching a keyboard.
 
 ---
 
-## 🌐 Live Application Access
+## 🌐 Live Web Demo & Video Walkthrough
 
-| Access Mode | Link / Target | Notes |
+| Resource | Target | Details |
 | :--- | :--- | :--- |
-| 🚀 **Public Live Web App** | [**shoulder-simply-coordinates-row.trycloudflare.com**](https://shoulder-simply-coordinates-row.trycloudflare.com) | **Active HTTPS URL** — Enables instant camera/webcam access on desktop & mobile browsers |
+| 🚀 **Interactive Live Web App** | [**battle-computed-threshold-carnival.trycloudflare.com**](https://battle-computed-threshold-carnival.trycloudflare.com) | **Active HTTPS URL** — Enables instant camera/webcam access on desktop & mobile browsers |
+| 🎬 **Live Demo Video (Animated)** | [`docs/screenshots/live_web_demo.gif`](docs/screenshots/live_web_demo.gif) | Full-workflow animated demonstration embedded above |
+| 📹 **Full Demo Video File (MP4)** | [`docs/screenshots/live_web_demo.mp4`](docs/screenshots/live_web_demo.mp4) | High-definition offline video file for presentations and review |
 | ⚡ **Local Dev Server** | `http://127.0.0.1:8000` | Full-stack FastAPI backend + Vanilla JS frontend |
 | 📦 **Cloud Deployment** | Render Blueprint (`render.yaml` & `Dockerfile`) | 1-click cloud production container |
 
@@ -202,7 +206,7 @@ pytest -v
 
 - **Author:** Saniya Yogesh Saratkar
 - **GitHub Repository:** [https://github.com/Saniya1312S/isl-sign-language-app](https://github.com/Saniya1312S/isl-sign-language-app)
-- **Live Demo:** [https://shoulder-simply-coordinates-row.trycloudflare.com](https://shoulder-simply-coordinates-row.trycloudflare.com)
+- **Live Demo:** [https://battle-computed-threshold-carnival.trycloudflare.com](https://battle-computed-threshold-carnival.trycloudflare.com)
 - **License:** [MIT License](LICENSE)
 
 *Built with passion for accessibility, assistive machine learning, and inclusive AI communication.*
