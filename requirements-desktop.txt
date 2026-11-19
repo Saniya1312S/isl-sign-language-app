@@ -1,0 +1,2 @@
+# Optional: Standalone desktop OpenCV app offline voice
+pyttsx3>=2.90

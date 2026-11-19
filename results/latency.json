@@ -1,0 +1,15 @@
+{
+ "machine": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel \u00b7 Windows \u00b7 Python 3.12.10",
+ "frames_measured": 120,
+ "image_size": "640x480",
+ "stages_ms_p50": {
+  "hand detection (MediaPipe)": 50.03,
+  "feature building": 0.587,
+  "classifier": 0.6,
+  "classifier (PyTorch DL)": 2.668
+ },
+ "classifier_ms_p50": 0.6,
+ "total_ms_p50": 53.8,
+ "total_ms_p95": 92.42,
+ "note": "Measured on real hand images resized to 640x480 with MediaPipe Hands tracking mode. Network time for browser camera streaming and translation / speech is not included."
+}

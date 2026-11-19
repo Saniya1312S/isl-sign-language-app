@@ -1,0 +1,215 @@
+{
+ "model": "Random Forest (100 trees)",
+ "rows": [
+  {
+   "features": "robust_isl",
+   "mirror_augmentation": false,
+   "n_features": 226,
+   "block_test": {
+    "accuracy": 0.9705,
+    "macro_f1": 0.9757
+   },
+   "mirrored_block_test": {
+    "accuracy": 0.7238,
+    "macro_f1": 0.7097
+   },
+   "external": {
+    "accuracy": 0.2787,
+    "macro_f1": 0.2569,
+    "n_images_with_hand": 506,
+    "end_to_end_accuracy": 0.2009,
+    "n_images_total": 702
+   },
+   "seconds": 4.6
+  },
+  {
+   "features": "robust_isl",
+   "mirror_augmentation": true,
+   "n_features": 226,
+   "block_test": {
+    "accuracy": 0.9705,
+    "macro_f1": 0.975
+   },
+   "mirrored_block_test": {
+    "accuracy": 0.9705,
+    "macro_f1": 0.975
+   },
+   "external": {
+    "accuracy": 0.3162,
+    "macro_f1": 0.2961,
+    "n_images_with_hand": 506,
+    "end_to_end_accuracy": 0.2279,
+    "n_images_total": 702
+   },
+   "seconds": 9.1
+  },
+  {
+   "features": "norm_eng",
+   "mirror_augmentation": false,
+   "n_features": 171,
+   "block_test": {
+    "accuracy": 0.9712,
+    "macro_f1": 0.9749
+   },
+   "mirrored_block_test": {
+    "accuracy": 0.5732,
+    "macro_f1": 0.5436
+   },
+   "external": {
+    "accuracy": 0.2609,
+    "macro_f1": 0.2637,
+    "n_images_with_hand": 506,
+    "end_to_end_accuracy": 0.188,
+    "n_images_total": 702
+   },
+   "seconds": 4.2
+  },
+  {
+   "features": "norm_eng",
+   "mirror_augmentation": true,
+   "n_features": 171,
+   "block_test": {
+    "accuracy": 0.9728,
+    "macro_f1": 0.977
+   },
+   "mirrored_block_test": {
+    "accuracy": 0.975,
+    "macro_f1": 0.9791
+   },
+   "external": {
+    "accuracy": 0.3281,
+    "macro_f1": 0.328,
+    "n_images_with_hand": 506,
+    "end_to_end_accuracy": 0.2365,
+    "n_images_total": 702
+   },
+   "seconds": 7.8
+  },
+  {
+   "features": "norm",
+   "mirror_augmentation": false,
+   "n_features": 131,
+   "block_test": {
+    "accuracy": 0.9709,
+    "macro_f1": 0.9776
+   },
+   "mirrored_block_test": {
+    "accuracy": 0.4752,
+    "macro_f1": 0.428
+   },
+   "external": {
+    "accuracy": 0.2095,
+    "macro_f1": 0.1771,
+    "n_images_with_hand": 506,
+    "end_to_end_accuracy": 0.151,
+    "n_images_total": 702
+   },
+   "seconds": 3.5
+  },
+  {
+   "features": "norm",
+   "mirror_augmentation": true,
+   "n_features": 131,
+   "block_test": {
+    "accuracy": 0.9694,
+    "macro_f1": 0.9742
+   },
+   "mirrored_block_test": {
+    "accuracy": 0.969,
+    "macro_f1": 0.9738
+   },
+   "external": {
+    "accuracy": 0.2549,
+    "macro_f1": 0.2247,
+    "n_images_with_hand": 506,
+    "end_to_end_accuracy": 0.1838,
+    "n_images_total": 702
+   },
+   "seconds": 6.5
+  },
+  {
+   "features": "sorted_raw",
+   "mirror_augmentation": false,
+   "n_features": 126,
+   "block_test": {
+    "accuracy": 0.9709,
+    "macro_f1": 0.9771
+   },
+   "mirrored_block_test": {
+    "accuracy": 0.3557,
+    "macro_f1": 0.3355
+   },
+   "external": {
+    "accuracy": 0.1719,
+    "macro_f1": 0.1377,
+    "n_images_with_hand": 506,
+    "end_to_end_accuracy": 0.1239,
+    "n_images_total": 702
+   },
+   "seconds": 3.2
+  },
+  {
+   "features": "sorted_raw",
+   "mirror_augmentation": true,
+   "n_features": 126,
+   "block_test": {
+    "accuracy": 0.9482,
+    "macro_f1": 0.9518
+   },
+   "mirrored_block_test": {
+    "accuracy": 0.9485,
+    "macro_f1": 0.9526
+   },
+   "external": {
+    "accuracy": 0.1601,
+    "macro_f1": 0.143,
+    "n_images_with_hand": 506,
+    "end_to_end_accuracy": 0.1154,
+    "n_images_total": 702
+   },
+   "seconds": 6.4
+  },
+  {
+   "features": "legacy_raw126",
+   "mirror_augmentation": false,
+   "n_features": 126,
+   "block_test": {
+    "accuracy": 0.9709,
+    "macro_f1": 0.9752
+   },
+   "mirrored_block_test": {
+    "accuracy": 0.1025,
+    "macro_f1": 0.0877
+   },
+   "external": {
+    "accuracy": 0.1561,
+    "macro_f1": 0.1205,
+    "n_images_with_hand": 506,
+    "end_to_end_accuracy": 0.1125,
+    "n_images_total": 702
+   },
+   "seconds": 3.1
+  },
+  {
+   "features": "legacy_raw126",
+   "mirror_augmentation": true,
+   "n_features": 126,
+   "block_test": {
+    "accuracy": 0.9709,
+    "macro_f1": 0.9759
+   },
+   "mirrored_block_test": {
+    "accuracy": 0.9705,
+    "macro_f1": 0.9758
+   },
+   "external": {
+    "accuracy": 0.1798,
+    "macro_f1": 0.1545,
+    "n_images_with_hand": 506,
+    "end_to_end_accuracy": 0.1296,
+    "n_images_total": 702
+   },
+   "seconds": 6.8
+  }
+ ]
+}
