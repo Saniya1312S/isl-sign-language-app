@@ -189,8 +189,11 @@ pytest -v
 
 ## 🔬 Scientific Honesty & Dataset Insights
 
-- **Group-Aware Splitting Protocol:** Video data contains highly correlated adjacent frames. Standard random shuffling would cause artificial $\sim 99.9\%$ test scores due to temporal leakage. We strictly partitioned data into **consecutive frame blocks** (10,400 train, 5,200 val, 5,200 test), measuring an authentic **96.8% block test accuracy**.
-- **Real-World Domain Shift:** When evaluated on `ISL_Dataset_2` (recorded under unconstrained illumination with unseen signers), performance drops to **29.5%**. This demonstrates real-world domain shift in computer vision and highlights the need for diverse multi-environment training data.
+- **Rigorous Evaluation Protocols:**
+  - **Protocol 1 (Random Split Baseline):** **100.00%** accuracy — demonstrates artificial memorization when consecutive video frames leak into test sets.
+  - **Protocol 2 (Held-out Block Split):** **97.12%** accuracy (**96.8%** final calibrated model) — strictly separates consecutive frame blocks (10,400 train, 5,200 val, 5,200 test), measuring authentic generalization.
+  - **Protocol 3 (External Domain Shift):** **26.09%** accuracy (**29.5%** end-to-end) on `ISL_Dataset_2` — honest measurement on unseen signers under unconstrained illumination.
+- **End-to-End Latency:** MediaPipe detection + feature extraction + SVM inference runs at **53.8 ms** total p50 (1.64 ms for classifier alone).
 - **Sample Gallery Verification:** Evaluated on all 26 authentic Indian ISL alphabet reference images with **100% correct classification**.
 
 ---
