@@ -1,16 +1,17 @@
 """
-ISL Gesture-to-Speech - Streamlit entry point.
+ISL Recognition System - Main Entry Point.
 
-Run:  streamlit run app.py
+Run:
+    streamlit run app.py
 """
 import streamlit as st
 
-st.set_page_config(page_title="ISL Gesture-to-Speech", page_icon="🤟", layout="wide")
-
 pages = [
-    st.Page("views/live.py", title="Live Translator", icon="🤟", default=True),
-    st.Page("views/assistant_page.py", title="SignAssistant", icon="🤖"),
-    st.Page("views/dashboard.py", title="Data & Model Dashboard", icon="📊"),
+    st.Page("views/recognition_demo.py", title="ISL Recognition Demo", icon="🤟", default=True),
+    st.Page("views/assistant_page.py", title="SignAssistant (Gemini)", icon="🤖"),
+    st.Page("views/live.py", title="Live Continuous Translator", icon="🗣️"),
+    st.Page("views/dashboard.py", title="Dataset & Audit Dashboard", icon="📊"),
     st.Page("views/about.py", title="About & Scope", icon="ℹ️"),
 ]
+
 st.navigation(pages).run()

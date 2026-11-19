@@ -1,0 +1,4 @@
+Model,Accuracy,Precision,Recall,Macro F1,Weighted F1,Validation Accuracy,Validation Macro F1,CV Macro F1,CV Std,Mirrored Accuracy,External Accuracy,Training Time (s),Inference Time (ms),Model Size (KB)
+Random Forest,0.9581,0.9636,0.9581,0.9567,0.9567,0.9787,0.9775,0.0,0.0,0.9617,0.3103,10.47,83.72,9251.6
+Support Vector Machine,0.9675,0.9709,0.9675,0.9659,0.9659,0.9948,0.9947,0.0,0.0,0.9673,0.2945,10.33,1.64,2021.4
+Multilayer Perceptron (MLP),0.9563,0.963,0.9563,0.9548,0.9548,0.9762,0.9747,0.0,0.0,0.9565,0.2431,47.54,1.27,1265.2

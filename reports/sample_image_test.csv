@@ -1,0 +1,50 @@
+image,source,expected,predicted,confidence,hand_detected,result,time_ms
+External_A.jpg,External,A,J,0.6564,True,FAIL (Wrong Label),163.05
+External_B.jpg,External,B,None,0.0,False,FAIL (No Hand),90.88
+External_C.jpg,External,C,None,0.0,False,FAIL (No Hand),44.61
+External_D.jpg,External,D,None,0.0,False,FAIL (No Hand),42.78
+External_E.jpg,External,E,A,0.3931,True,FAIL (Wrong Label),134.49
+External_F.jpg,External,F,F,0.7072,True,PASS,91.4
+External_G.jpg,External,G,None,0.0,False,FAIL (No Hand),50.11
+External_I.jpg,External,I,None,0.0,False,FAIL (No Hand),48.27
+External_K.jpg,External,K,None,0.0,False,FAIL (No Hand),45.26
+External_L.jpg,External,L,None,0.0,False,FAIL (No Hand),51.92
+External_M.jpg,External,M,R,0.3529,True,FAIL (Wrong Label),109.34
+External_N.jpg,External,N,F,0.5811,True,FAIL (Wrong Label),92.4
+External_O.jpg,External,O,None,0.0,False,FAIL (No Hand),64.52
+External_P.jpg,External,P,D,0.5208,True,FAIL (Wrong Label),137.78
+External_Q.jpg,External,Q,None,0.0,False,FAIL (No Hand),48.57
+External_R.jpg,External,R,H,0.9822,True,FAIL (Wrong Label),98.64
+External_S.jpg,External,S,S,0.7675,True,PASS,103.52
+External_T.jpg,External,T,Y,0.9493,True,FAIL (Wrong Label),160.76
+External_U.jpg,External,U,Y,0.8229,True,FAIL (Wrong Label),132.12
+External_V.jpg,External,V,None,0.0,False,FAIL (No Hand),94.81
+External_W.jpg,External,W,R,0.3422,True,FAIL (Wrong Label),114.52
+External_X.jpg,External,X,Y,0.3871,True,FAIL (Wrong Label),208.3
+External_Z.jpg,External,Z,None,0.0,False,FAIL (No Hand),61.17
+Indian_A.jpg,Indian,A,A,0.9791,True,PASS,151.19
+Indian_B.jpg,Indian,B,B,0.904,True,PASS,139.1
+Indian_C.jpg,Indian,C,C,0.9788,True,PASS,94.83
+Indian_D.jpg,Indian,D,D,0.9768,True,PASS,133.92
+Indian_E.jpg,Indian,E,E,0.958,True,PASS,144.66
+Indian_F.jpg,Indian,F,F,0.977,True,PASS,134.47
+Indian_G.jpg,Indian,G,G,0.9765,True,PASS,142.33
+Indian_H.jpg,Indian,H,H,0.9839,True,PASS,95.72
+Indian_I.jpg,Indian,I,I,0.9833,True,PASS,90.12
+Indian_J.jpg,Indian,J,J,0.9809,True,PASS,84.34
+Indian_K.jpg,Indian,K,K,0.9768,True,PASS,135.18
+Indian_L.jpg,Indian,L,L,0.9863,True,PASS,98.41
+Indian_M.jpg,Indian,M,M,0.989,True,PASS,151.7
+Indian_N.jpg,Indian,N,N,0.9823,True,PASS,173.78
+Indian_O.jpg,Indian,O,O,0.9935,True,PASS,148.94
+Indian_P.jpg,Indian,P,P,0.9803,True,PASS,158.66
+Indian_Q.jpg,Indian,Q,Q,0.9763,True,PASS,94.07
+Indian_R.jpg,Indian,R,R,0.986,True,PASS,88.99
+Indian_S.jpg,Indian,S,S,0.9578,True,PASS,105.32
+Indian_T.jpg,Indian,T,T,0.9835,True,PASS,145.5
+Indian_U.jpg,Indian,U,U,0.9914,True,PASS,105.14
+Indian_V.jpg,Indian,V,V,0.9768,True,PASS,92.77
+Indian_W.jpg,Indian,W,W,0.9939,True,PASS,92.63
+Indian_X.jpg,Indian,X,X,0.9615,True,PASS,148.27
+Indian_Y.jpg,Indian,Y,Y,0.9562,True,PASS,132.53
+Indian_Z.jpg,Indian,Z,Z,0.9791,True,PASS,126.61
